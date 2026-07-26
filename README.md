@@ -2,11 +2,11 @@
 
 [![Template CI](https://github.com/bnet47/codexicon/actions/workflows/ci.yml/badge.svg)](https://github.com/bnet47/codexicon/actions/workflows/ci.yml)
 [![MIT License](https://img.shields.io/badge/license-MIT-0f766e.svg)](LICENSE)
-[![Template version](https://img.shields.io/badge/template-v2.5.0-2563eb.svg)](TEMPLATE_VERSION)
+[![Template version](https://img.shields.io/badge/template-v2.6.0--dev-2563eb.svg)](TEMPLATE_VERSION)
 
 **A production-minded project template for building with Codex.**
 
-Codexicon gives a new repository an explicit path from an idea to verified delivery: durable project guidance, progressively loaded skills, canonical checks, credential safeguards, production-readiness review, and clear authority boundaries for Git, deployment, and external systems.
+Codexicon gives new and established repositories an explicit path from an idea to verified delivery: durable project guidance, progressively loaded skills, canonical checks, credential safeguards, production-readiness review, and clear authority boundaries for Git, deployment, and external systems.
 
 It is intentionally not an application starter or a framework opinion. You define the product first, then Codex configures the smallest suitable stack for that project.
 
@@ -28,6 +28,16 @@ Starting from an empty repository leaves every Codex task to rediscover how the 
 ### 1. Create a project
 
 On GitHub, select **Use this template**, then **Create a new repository**. For local-only work, copy the directory and omit its `.git` directory.
+
+To add Codexicon to an established repository, keep the repositories separate and inspect first:
+
+```bash
+python scripts/codexicon.py inspect /path/to/existing-repository
+```
+
+Inspection does not write. After reviewing conflicts and project-owned requirements, explicit `adopt ... --apply` copies only absent managed/merge files and records baseline hashes; it never replaces existing content. See [Adoption, diagnostics, and updates](docs/codex.md#adoption-diagnostics-and-updates).
+
+On Windows, after deliberately staging the adopted files, run `python scripts/codexicon.py sync-git-modes` in the target. This changes only the manifest-declared executable bits already in the Git index, so later POSIX clones can run the tracked hooks and shell entry points.
 
 ### 2. Open the new project in Codex
 
@@ -116,6 +126,7 @@ ownership. Do not deploy or accept risk on my behalf.
 
 | Stage | Primary workflow | Evidence before continuing |
 |---|---|---|
+| Adopt (established repository) | `$adopt-codexicon` | Read-only compatibility plan, reviewed conflicts, then explicitly authorized integration |
 | Discover | `$discover` | Approved product charter |
 | Initialize | `$init` | Working stack, commands, CI, and project identity |
 | Build | `$quick`, `$brainstorm`, `$spec`, `$write-plan`, `$execute-plan` | Observable behavior and focused verification |
@@ -129,6 +140,7 @@ The [live visual playbook](https://bnet47.github.io/codexicon/repo-template-play
 
 | Situation | Use |
 |---|---|
+| Established repository needs Codexicon | `$adopt-codexicon` |
 | Unconfigured project | `$discover` → `$init` |
 | Clear change affecting a few files | `$quick` |
 | Unclear feature behavior | `$brainstorm` |
@@ -190,8 +202,11 @@ The template validator enforces budgets for always-loaded repository guidance an
 └── tests/                    # template, hook, scanner, and creative checks
 ```
 
+The root `.codexicon.json` is the source ownership contract used by the repository-local manager; adopted projects record their installed baselines in `.codexicon.lock.json`.
+
 ## Documentation
 
+- [Interactive visual playbook](https://bnet47.github.io/codexicon/repo-template-playbook.html)
 - [Start a project](START_HERE.md)
 - [Codex configuration and hooks](docs/codex.md)
 - [Agent and delegation patterns](docs/agent-patterns.md)
@@ -216,12 +231,22 @@ No provider account, API key, database, hosting platform, or optional integratio
 - It does not choose a framework, database, or cloud before the project requires one.
 - It does not guarantee that generated code is correct, secure, accessible, or production-ready.
 - It does not read credentials, create production secrets, or preconfigure third-party integrations.
+- It does not download or apply automatic harness updates.
 - It does not authorize commits, pushes, deployments, messages, purchases, or production changes.
 - It does not replace product judgment, security review, operational ownership, or human risk acceptance.
 
 ## Versioning and updates
 
-Template releases are recorded in [`TEMPLATE_VERSION`](TEMPLATE_VERSION). Projects created from Codexicon are independent repositories and do not receive automatic upgrades. Review release notes and port relevant safeguards deliberately rather than overwriting project-specific guidance or commands.
+Template releases are recorded in [`TEMPLATE_VERSION`](TEMPLATE_VERSION). Projects remain independent and never receive automatic or network-fetched upgrades.
+
+Adopted repositories can compare a trusted local release source and apply only baseline-unchanged files:
+
+```bash
+python scripts/codexicon.py update --root /path/to/project --source /path/to/new-codexicon
+python scripts/codexicon.py update --root /path/to/project --source /path/to/new-codexicon --apply
+```
+
+The first command is a read-only plan. Apply uses atomic writes and rollback, leaves locally modified files as conflicts, and never commits or publishes the result. Project-owned commands, guidance, architecture, and decisions still require deliberate integration.
 
 ## Community
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import importlib.util
 import io
 import json
@@ -8,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 import unittest
 import uuid
 from pathlib import Path
@@ -24,6 +26,11 @@ assert HOOK_SPEC and HOOK_SPEC.loader
 HOOK_MODULE = importlib.util.module_from_spec(HOOK_SPEC)
 sys.modules[HOOK_SPEC.name] = HOOK_MODULE
 HOOK_SPEC.loader.exec_module(HOOK_MODULE)
+CODEX_HOOK = HOOK_MODULE
+VALIDATOR_SPEC = importlib.util.spec_from_file_location("template_validator_under_test", VALIDATOR)
+assert VALIDATOR_SPEC and VALIDATOR_SPEC.loader
+TEMPLATE_VALIDATOR = importlib.util.module_from_spec(VALIDATOR_SPEC)
+VALIDATOR_SPEC.loader.exec_module(TEMPLATE_VALIDATOR)
 
 
 def make_test_directory() -> Path:
@@ -43,6 +50,53 @@ class TemplateValidationTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_durable_guidance_policy_detects_brittle_external_assumptions(self) -> None:
+        samples = {
+            "Use gpt-5.4 for every review.": "named or versioned model choice",
+            "Keep the report at most five lines.": "fixed workflow threshold",
+            "This costs $2 per million input tokens.": "token-unit pricing",
+            "Charge $2 / 1M tokens.": "token-unit pricing",
+            "Offer it at half price.": "fixed pricing discount",
+            "Compact at 50% of the context.": "fixed context threshold",
+            "Compact when 100k tokens remain.": "fixed context threshold",
+            "Handle roughly one to three files.": "fixed workflow count",
+            "Use three agents.": "fixed workflow count",
+        }
+        for content, expected in samples.items():
+            with self.subTest(content=content):
+                self.assertIn(
+                    expected,
+                    TEMPLATE_VALIDATOR.durable_guidance_findings(content),
+                )
+
+        self.assertEqual(
+            TEMPLATE_VALIDATOR.durable_guidance_findings(
+                "Choose current capabilities for the task and keep the report compact."
+            ),
+            [],
+        )
+
+    def test_toml_fallback_preserves_nested_mcp_sections(self) -> None:
+        config = self.temp_config(
+            '[mcp_servers.docs]\nenabled = false\n'
+            'default_tools_approval_mode = "prompt"\n'
+        )
+        original_tomllib = TEMPLATE_VALIDATOR.tomllib
+        TEMPLATE_VALIDATOR.tomllib = None
+        try:
+            parsed = TEMPLATE_VALIDATOR.parse_template_toml(config)
+        finally:
+            TEMPLATE_VALIDATOR.tomllib = original_tomllib
+        self.assertIn("docs", parsed["mcp_servers"])
+        self.assertTrue(TEMPLATE_VALIDATOR.has_active_mcp_servers(parsed))
+
+    def temp_config(self, content: str) -> Path:
+        directory = make_test_directory()
+        self.addCleanup(shutil.rmtree, directory, True)
+        path = directory / "config.toml"
+        path.write_text(content, encoding="utf-8")
+        return path
+
     def test_every_registered_hook_bootstraps_from_a_subdirectory_without_git(self) -> None:
         hooks = json.loads(HOOKS_JSON.read_text(encoding="utf-8"))
         expected_matchers = {
@@ -51,6 +105,7 @@ class TemplateValidationTests(unittest.TestCase):
             "PostToolUse": ["^apply_patch$|Edit|Write", "^Bash$"],
             "PreCompact": [None],
             "Stop": [None],
+            "SessionEnd": [None],
         }
         self.assertEqual(set(hooks["hooks"]), set(expected_matchers))
 
@@ -87,7 +142,10 @@ class TemplateValidationTests(unittest.TestCase):
                             elif event == "PreCompact":
                                 payload["trigger"] = "manual"
                             elif event == "Stop":
-                                payload["stop_hook_active"] = False
+                                payload.update(
+                                    turn_id="turn-bootstrap",
+                                    stop_hook_active=False,
+                                )
                                 initialized = subprocess.run(
                                     [sys.executable, str(HOOK), "session-start"],
                                     cwd=ROOT,
@@ -102,6 +160,9 @@ class TemplateValidationTests(unittest.TestCase):
                                     0,
                                     initialized.stdout + initialized.stderr,
                                 )
+                            elif event == "SessionEnd":
+                                payload["reason"] = "other"
+                                self.assertLessEqual(handler["timeout"], 3)
 
                             result = subprocess.run(
                                 command,
@@ -173,6 +234,11 @@ class CodexHookTests(unittest.TestCase):
             {"session_id": "s1", "stop_hook_active": False},
         )
         self.assertEqual(allowed.returncode, 0, allowed.stderr)
+
+    def session_summary(self, session_id: str = "s1") -> dict:
+        digest = hashlib.sha256(session_id.encode("utf-8")).hexdigest()[:20]
+        path = self.temp_dir / "summaries" / f"session-{digest}.json"
+        return json.loads(path.read_text(encoding="utf-8"))
 
     def test_secret_policy_blocks_operator_bypasses_but_allows_example(self) -> None:
         blocked_commands = [
@@ -317,6 +383,153 @@ class CodexHookTests(unittest.TestCase):
         self.assertFalse(expired.exists())
         self.assertFalse(malformed.exists())
         self.assertEqual(len(list(receipt_dir.glob("*.json"))), 1)
+
+    def test_session_summary_records_supported_lifecycle_fields(self) -> None:
+        started = self.run_hook("session-start", {"session_id": "s1", "source": "startup"})
+        self.assertEqual(started.returncode, 0, started.stderr)
+
+        first_turn = {"session_id": "s1", "turn_id": "turn-1"}
+        self.assertEqual(self.run_hook("record-stop", {**first_turn, "stop_hook_active": False}).returncode, 0)
+        self.assertEqual(self.run_hook("record-stop", {**first_turn, "stop_hook_active": False}).returncode, 0)
+        self.assertEqual(
+            self.run_hook(
+                "record-stop",
+                {"session_id": "s1", "turn_id": "turn-2", "stop_hook_active": False},
+            ).returncode,
+            0,
+        )
+        self.assertEqual(
+            self.run_hook("record-stop", {**first_turn, "stop_hook_active": False}).returncode,
+            0,
+        )
+        self.assertEqual(
+            self.run_hook("record-compact", {"session_id": "s1", "trigger": "manual"}).returncode,
+            0,
+        )
+        self.assertEqual(self.session_summary()["turn_count"], 0)
+        self.assertEqual(
+            self.run_hook("end-session", {"session_id": "s1", "reason": "other"}).returncode,
+            0,
+        )
+
+        summary = self.session_summary()
+        self.assertEqual(summary["turn_count"], 2)
+        self.assertEqual(summary["compact_count"], 1)
+        self.assertIsNotNone(summary["session_started_at"])
+        self.assertIsNotNone(summary["session_ended_at"])
+        self.assertEqual(summary["usage"]["availability"], "not_exposed_by_hook_payloads")
+        self.assertIsNone(summary["usage"]["input_tokens"])
+        self.assertIsNone(summary["usage"]["cached_input_tokens"])
+        self.assertIsNone(summary["usage"]["reasoning_output_tokens"])
+
+    def test_session_telemetry_ignores_missing_optional_fields(self) -> None:
+        self.assertEqual(self.run_hook("record-turn", {}).returncode, 0)
+        self.assertEqual(self.run_hook("record-compact", {}).returncode, 0)
+        self.assertEqual(self.run_hook("end-session", {}).returncode, 0)
+
+    def test_telemetry_skips_busy_state_lock_without_blocking(self) -> None:
+        self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
+        original_state_file = CODEX_HOOK.STATE_FILE
+        CODEX_HOOK.STATE_FILE = self.state_file
+        try:
+            with CODEX_HOOK.state_lock() as acquired:
+                self.assertTrue(acquired)
+                started = time.monotonic()
+                result = self.run_hook("record-turn", {"session_id": "s1", "turn_id": "busy"})
+                elapsed = time.monotonic() - started
+        finally:
+            CODEX_HOOK.STATE_FILE = original_state_file
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertLess(elapsed, 1.0)
+        state = json.loads(self.state_file.read_text(encoding="utf-8"))
+        self.assertEqual(state["turn_count"], 0)
+
+    def test_session_start_fails_fast_when_state_lock_is_busy(self) -> None:
+        self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
+        original = json.loads(self.state_file.read_text(encoding="utf-8"))
+        original_state_file = CODEX_HOOK.STATE_FILE
+        CODEX_HOOK.STATE_FILE = self.state_file
+        try:
+            with CODEX_HOOK.state_lock() as acquired:
+                self.assertTrue(acquired)
+                started = time.monotonic()
+                result = self.run_hook("session-start", {"session_id": "s1", "source": "clear"})
+                elapsed = time.monotonic() - started
+        finally:
+            CODEX_HOOK.STATE_FILE = original_state_file
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("initialization was not recorded", result.stderr)
+        self.assertLess(elapsed, 1.0)
+        current = json.loads(self.state_file.read_text(encoding="utf-8"))
+        self.assertEqual(current["session_started_at"], original["session_started_at"])
+
+    def test_summary_write_is_serialized_with_authoritative_state(self) -> None:
+        self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
+        original_paths = (
+            CODEX_HOOK.STATE_FILE,
+            CODEX_HOOK.STATE_DIR,
+            CODEX_HOOK.RECEIPT_DIR,
+            CODEX_HOOK.SUMMARY_DIR,
+        )
+        CODEX_HOOK.STATE_FILE = self.state_file
+        CODEX_HOOK.STATE_DIR = self.temp_dir
+        CODEX_HOOK.RECEIPT_DIR = self.temp_dir / "receipts"
+        CODEX_HOOK.SUMMARY_DIR = self.temp_dir / "summaries"
+        original_summary = CODEX_HOOK.write_session_summary
+        concurrent_results: list[subprocess.CompletedProcess[str]] = []
+
+        def inspect_lock(state: dict) -> None:
+            concurrent_results.append(
+                self.run_hook("record-turn", {"session_id": "s1", "turn_id": "late"})
+            )
+            original_summary(state)
+
+        try:
+            with mock.patch.object(CODEX_HOOK, "write_session_summary", side_effect=inspect_lock):
+                self.assertEqual(CODEX_HOOK.end_session({"session_id": "s1"}), 0)
+        finally:
+            (
+                CODEX_HOOK.STATE_FILE,
+                CODEX_HOOK.STATE_DIR,
+                CODEX_HOOK.RECEIPT_DIR,
+                CODEX_HOOK.SUMMARY_DIR,
+            ) = original_paths
+
+        self.assertEqual(concurrent_results[0].returncode, 0, concurrent_results[0].stderr)
+        state = json.loads(self.state_file.read_text(encoding="utf-8"))
+        self.assertEqual(state["turn_count"], 0)
+        self.assertEqual(self.session_summary()["turn_count"], 0)
+
+    def test_malformed_numeric_telemetry_degrades_safely(self) -> None:
+        self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
+        state = json.loads(self.state_file.read_text(encoding="utf-8"))
+        state["compact_count"] = float("inf")
+        self.state_file.write_text(json.dumps(state), encoding="utf-8")
+
+        compact = self.run_hook("record-compact", {"session_id": "s1"})
+        ended = self.run_hook("end-session", {"session_id": "s1"})
+
+        self.assertEqual(compact.returncode, 0, compact.stderr)
+        self.assertEqual(ended.returncode, 0, ended.stderr)
+        self.assertEqual(self.session_summary()["compact_count"], 1)
+
+    def test_malformed_verification_epochs_fail_closed(self) -> None:
+        self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
+        state = json.loads(self.state_file.read_text(encoding="utf-8"))
+        state.update(
+            has_writes=True,
+            last_write_epoch="not-a-number",
+            lint_passed=True,
+            lint_epoch=float("nan"),
+        )
+        self.state_file.write_text(json.dumps(state), encoding="utf-8")
+
+        result = self.run_hook("verify-stop", {"session_id": "s1", "stop_hook_active": False})
+
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn("Missing or stale: lint", result.stderr)
 
     def test_common_read_only_shell_commands_do_not_require_verification(self) -> None:
         self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
@@ -563,6 +776,85 @@ class CodexHookTests(unittest.TestCase):
         self.assertEqual(blocked.returncode, 2)
         self.assertIn("lint", blocked.stderr)
         self.assertIn("tests", blocked.stderr)
+
+    def test_receipt_remains_recoverable_until_state_is_persisted(self) -> None:
+        self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
+        receipt = self.receipt("lint")
+        receipt_id = receipt.rsplit("receipt=", 1)[1].strip()
+        payload = {
+            "session_id": "s1",
+            "tool_input": {"command": "./scripts/lint.sh"},
+            "tool_response": receipt,
+        }
+        original_paths = (
+            CODEX_HOOK.STATE_FILE,
+            CODEX_HOOK.STATE_DIR,
+            CODEX_HOOK.RECEIPT_DIR,
+            CODEX_HOOK.SUMMARY_DIR,
+        )
+        CODEX_HOOK.STATE_FILE = self.state_file
+        CODEX_HOOK.STATE_DIR = self.temp_dir
+        CODEX_HOOK.RECEIPT_DIR = self.temp_dir / "receipts"
+        CODEX_HOOK.SUMMARY_DIR = self.temp_dir / "summaries"
+        original_save = CODEX_HOOK.save_json_atomic
+
+        def fail_state_write(path: Path, value: dict) -> None:
+            if path == self.state_file:
+                raise OSError("simulated state persistence failure")
+            original_save(path, value)
+
+        try:
+            with mock.patch.object(CODEX_HOOK, "save_json_atomic", side_effect=fail_state_write):
+                with self.assertRaises(OSError):
+                    CODEX_HOOK.record_shell(payload)
+            claims = list((self.temp_dir / "receipts").glob(f"{receipt_id}-*.claim"))
+            self.assertEqual(len(claims), 1)
+
+            self.assertEqual(CODEX_HOOK.record_shell(payload), 0)
+            self.assertFalse(claims[0].exists())
+            successful_state = json.loads(self.state_file.read_text(encoding="utf-8"))
+            self.assertTrue(successful_state["lint_passed"])
+            self.assertIn(receipt_id, successful_state["consumed_receipts"])
+            self.assertEqual(CODEX_HOOK.reset_state({"session_id": "s1"}), 0)
+            reset_state = json.loads(self.state_file.read_text(encoding="utf-8"))
+            self.assertFalse(reset_state["lint_passed"])
+            self.assertIn(receipt_id, reset_state["consumed_receipts"])
+        finally:
+            (
+                CODEX_HOOK.STATE_FILE,
+                CODEX_HOOK.STATE_DIR,
+                CODEX_HOOK.RECEIPT_DIR,
+                CODEX_HOOK.SUMMARY_DIR,
+            ) = original_paths
+
+    def test_receipt_created_before_session_reset_cannot_verify_new_writes(self) -> None:
+        self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
+        stale_receipt = self.receipt("lint")
+        self.assertEqual(
+            self.run_hook("session-start", {"session_id": "s1", "source": "clear"}).returncode,
+            0,
+        )
+        self.assertEqual(
+            self.run_hook(
+                "record-write",
+                {"session_id": "s1", "tool_input": {"file_path": "README.md"}},
+            ).returncode,
+            0,
+        )
+
+        replay = self.run_hook(
+            "record-shell",
+            {
+                "session_id": "s1",
+                "tool_input": {"command": "./scripts/lint.sh"},
+                "tool_response": stale_receipt,
+            },
+        )
+        blocked = self.run_hook("verify-stop", {"session_id": "s1", "stop_hook_active": False})
+
+        self.assertEqual(replay.returncode, 0, replay.stderr)
+        self.assertEqual(blocked.returncode, 2)
+        self.assertIn("Missing or stale: lint", blocked.stderr)
 
     def test_mutating_shell_command_invalidates_prior_verification(self) -> None:
         self.run_hook("session-start", {"session_id": "s1"})

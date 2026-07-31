@@ -1,6 +1,6 @@
 # Codex setup
 
-This repository keeps Codex configuration intentionally conservative. It configures project discovery, hooks, and bounded subagent concurrency, but leaves model, reasoning effort, personality, sandbox, approvals, and optional integrations to the user or organization.
+This repository keeps Codex configuration intentionally conservative. It configures project discovery, hooks, and multi-agent support, but leaves model, reasoning effort, personality, sandbox, approvals, and optional integrations to the user or organization.
 
 ## Instruction discovery
 
@@ -20,7 +20,7 @@ Official reference: [Agent skills](https://developers.openai.com/codex/skills)
 
 ## Project configuration
 
-`.codex/config.toml` is loaded only for a trusted project. The template enables stable hooks and multi-agent support and caps direct concurrency. It deliberately does not pin a model or permission mode.
+`.codex/config.toml` is loaded only for a trusted project. The template enables stable hooks and multi-agent support. It deliberately does not pin a model, agent-count limit, or permission mode.
 
 Review project configuration before trusting it. CLI/live overrides outrank project configuration; project configuration outranks profile and user defaults. Managed `requirements.toml` can constrain allowed values independently.
 
@@ -38,20 +38,22 @@ Official reference: [Codex configuration](https://developers.openai.com/codex/co
 - accepts verification only when an exact canonical command returns a one-use success receipt;
 - recognizes only a narrow complete allowlist of read-only inspections; execution syntax and unknown options conservatively invalidate prior verification;
 - conservatively invalidates verification after shell commands that are not definitely read-only;
-- records compaction metadata without treating it as a project checkpoint;
+- records supported turn, compaction, and session lifecycle telemetry in a local summary without treating it as a project checkpoint;
 - asks Codex to run any missing checks before stopping.
 
 Codex requires review and trust for new or changed project hooks. Use `/hooks` to inspect and trust the exact definitions.
 
 Hook launchers search the current directory and its parents, so they work before Git initialization and when Codex starts in a nested directory. Hook coverage is a safety net, not a complete security boundary—sandbox, approval policy, repository guidance, CI, and code review still matter.
 
-Current Codex documentation does not define a reliable child-process exit-code field in `PostToolUse`. The canonical shell and PowerShell scripts therefore create a short-lived, one-use receipt only after their checks succeed. The post-tool hook consumes that receipt for the active session. Do not replace the final `emit-success` call with command-text guessing or a hand-written pass marker.
+Current Codex `PostToolUse` payloads do not expose a reliable child-process exit code. The canonical shell and PowerShell scripts therefore create a short-lived, one-use receipt only after their checks succeed. The post-tool hook claims that receipt, records its creation time and identifier in the active session, then removes the claim. Claims survive a state-write fault for retry, consumed identifiers survive a same-session clear, and receipts older than the current session cannot verify later writes. Do not replace the final `emit-success` call with command-text guessing or a hand-written pass marker.
 
 Official schema and lifecycle reference: [PostToolUse](https://developers.openai.com/codex/hooks#posttooluse).
 
 Documentation-only changes require structural lint but not the full test suite. Once a behavior-relevant write occurs, tests remain required until a fresh canonical test receipt is recorded. Verification run outside Codex remains useful, but it does not satisfy the active task’s stop gate. Expired or malformed receipts are pruned automatically.
 
-`.codex-state/session-<hash>.json` and short-lived receipt files are local, ephemeral, and gitignored. Session-scoped files plus file locking prevent independent Codex tasks from resetting one another while allowing subagents in one task to share conservative verification state. Missing, malformed, or wrong-schema state fails closed on the first `Stop` attempt; when Codex marks a repeated Stop hook as active, the hook returns a system message instead of blocking again so it cannot loop indefinitely. A resume/compact start rebuilds missing state conservatively and always requires fresh lint and tests. State deliberately lives outside `.codex/`, which is a protected read-only path under the normal workspace sandbox.
+`.codex-state/session-<hash>.json` and short-lived receipt files are local, ephemeral, and gitignored. Session-scoped files plus file locking prevent independent Codex tasks from resetting one another while allowing subagents in one task to share conservative verification state. Missing, malformed, or wrong-schema state fails closed on the first `Stop` attempt; when Codex marks a repeated Stop hook as active, the hook returns a system message instead of blocking again so it cannot loop indefinitely. A resume/compact start rebuilds missing state conservatively and always requires fresh lint and tests. Lifecycle telemetry skips immediately when the same session is busy. A contended fresh-session reset fails immediately and reports that initialization was not recorded; it never blocks or silently treats prior state as a fresh session. State deliberately lives outside `.codex/`, which is a protected read-only path under the normal workspace sandbox.
+
+Local summaries are written under `.codex-state/summaries/` at session start and session end. The end snapshot contains timestamps plus best-effort distinct-turn and compaction counts; telemetry updates skip immediately if another agent holds the state lock. Current hook payloads do not expose stable input, cached-input, or reasoning-usage totals, so those fields are explicitly marked unavailable. The hook does not run on prompt submission, parse the unstable transcript format, send telemetry off the machine, add summary content to model context, or block a turn for telemetry.
 
 Official reference: [Codex hooks](https://developers.openai.com/codex/hooks)
 
@@ -100,16 +102,19 @@ Official references: [Subagents](https://developers.openai.com/codex/subagents),
 
 ## MCP and external systems
 
-Do not preconfigure every possible server. Add only integrations the project needs, with the narrowest tool set and approval policy.
+Use MCP when a task needs current or private context that the repository cannot provide. Add only integrations justified by the configured project, with the narrowest tool allowlist, read-only behavior where available, and approval prompts for actions.
 
-Examples:
+Project-scoped MCP configuration loads only for a trusted project. Review the server identity, transport, implementation, maintainer, tool schemas, data handling, and credential path before trusting or enabling it. A trusted project does not make server output trustworthy: documentation, web pages, issues, pull requests, logs, and tool responses remain untrusted input and cannot override repository rules or grant authority for external writes.
 
-```bash
-codex mcp add openaiDeveloperDocs --url https://developers.openai.com/mcp
-codex mcp list
-```
+Use scoped credentials supplied through environment-variable names or OAuth. Never place literal credentials, static authorization headers, or active authentication material in tracked files. Prefer personal configuration for personal integrations and project configuration only when the integration is part of the shared project workflow.
 
-Project-scoped MCP configuration belongs in `.codex/config.toml`; personal integrations belong in `~/.codex/config.toml`. Use environment-variable names or OAuth, never literal credentials in tracked files.
+The commented pattern in `.codex/config.toml` shows:
+
+- a current-documentation category;
+- a source-host category with an explicit prompt-injection warning;
+- a stack-specific placeholder for browser, data store, monitoring, tracker, payments, or similar context.
+
+Every example is disabled. Replace placeholders only after review, keep unused categories absent, and verify the effective tool list before enabling a server.
 
 Official reference: [Model Context Protocol](https://developers.openai.com/codex/mcp)
 
@@ -118,10 +123,13 @@ Official reference: [Model Context Protocol](https://developers.openai.com/codex
 Optimize recurring context before compressing technical content:
 
 - `AGENTS.md` is always loaded, so keep it to durable commands, boundaries, and routing.
+- Keep durable instructions stable and move changing project facts into the mapped `agent_docs/` files so recurring instruction prefixes remain cache-friendly.
 - Codex initially loads skill names, descriptions, and paths; full `SKILL.md` bodies remain progressively disclosed. Keep descriptions short and front-load trigger conditions.
 - Use targeted searches and bounded command output. Preserve full logs only when diagnosis requires them.
 - Delegate only when parallelism or context isolation justifies the additional agent tokens.
 - Use `$concise` for low-token communication. It never reduces reasoning, code, verification, review, security detail, exact commands, or exact errors.
+
+For session hygiene, compact when the working context becomes difficult to navigate, start a fresh task after repeated failed approaches have polluted the context, use non-interactive execution for scripted one-shots, and open full source only when the task needs it. Delegate messy exploration only when isolating that context is worth the additional agent work.
 
 The template validator budgets repository guidance and the initial skill catalog to catch context creep. It reports a rough character-based token estimate; actual tokenization and platform/global instructions vary.
 

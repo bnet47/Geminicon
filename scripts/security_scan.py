@@ -202,7 +202,7 @@ def scan_lines(path: Path, root: Path) -> Iterable[Finding]:
             if b"\0" in prefix:
                 return
             content = prefix + raw.read()
-    except (OSError, PermissionError):
+    except OSError:
         yield Finding(normalized_relative(path, root), 0, "unreadable-file")
         return
 

@@ -1,18 +1,32 @@
-2.6.0-dev
+2.6.1-dev
 
 Status: Unreleased
 
-## 2.6.0 — Repository-harness hardening
+## 2.6.1 — Harness reliability hardening
+
+- Made lifecycle telemetry non-blocking under agent contention and moved start/end summaries inside the state lock so an older snapshot cannot overwrite newer session state.
+- Deduplicated completed turns across the full session and made malformed numeric telemetry degrade safely.
+- Made verification receipts recoverable until their success is durably recorded, with replay protection retained in session state.
+- Made the credential scanner fail closed when a safe candidate cannot be read.
+- Removed brittle model, workflow-count, and agent-count assumptions from durable guidance and project defaults.
+- Added regression checks for active MCP configuration, external model and pricing assumptions, workflow thresholds, lock contention, stale summaries, receipt persistence faults, and unreadable scan targets.
+- Reconciled playbook adoption guidance with the shipped repository manager and manual upgrade guide.
+
+## 2.6.0 — Repository harness and external-context safety
 
 - Added a dependency-free repository manager for read-only adoption inspection, post-init diagnostics, canonical verification, explicit checkpoints, safe local-source updates, and Git-hook installation.
 - Added schema-1 whole-file ownership and installed baseline locks with explicit apply, atomic writes, rollback, interrupted-transaction recovery, and conflict preservation.
 - Recovered missing resume/handoff verification state conservatively, made checkpoint selection repository-compatible, and narrowed the external researcher away from built-in explorer work.
-- Removed undocumented Codex configuration, hardened hook mutation classification and malformed-state behavior, and strengthened credential scanning against placeholder and unreadable-file bypasses.
-- Enforced executable LF POSIX entry points, macOS/Linux/Windows CI coverage, native Windows security execution, and tracked Git-hook smoke tests.
-
-Released versions:
-
-**2.5.0 — 2026-07-18**
+- Hardened hook mutation classification and malformed-state behavior, credential scanning, executable POSIX entry points, cross-platform CI, and tracked Git-hook smoke tests.
+- Added a concise MCP trust posture and a fully commented, disabled configuration pattern because external context is useful only when server identity, tools, data handling, and authority remain reviewable.
+- Made MCP an optional initialization decision and expanded the security template because integrations should be justified by the configured project rather than inherited automatically.
+- Extended the existing portable hook with local lifecycle summaries; unsupported usage totals remain explicitly unavailable because stable hook payload fields do not expose them.
+- Kept concrete model and reasoning choices user-controlled because repository metadata cannot safely assume current availability or make a durable routing promise.
+- Added cache-friendly and session-hygiene guidance in on-demand documentation while leaving the always-loaded project guidance unchanged.
+- Added no subagent profiles because the existing bounded researcher, reviewer, and implementer roles already cover the useful delegation cases.
+- Deferred CI-native automated review because authentication, availability, and trust policy need a deliberate maintainer integration before an advisory workflow is safe.
+- Kept the existing newcomer routing maps because they already make the skill surface discoverable without another navigation layer.
+- Added a downstream upgrade guide because independent projects need a safe merge path that preserves identity, commands, security ownership, and accepted decisions.
 
 ## 2.5.0 — Codexicon public release
 
@@ -59,7 +73,7 @@ Released versions:
 - Added native PowerShell lint/test entry points and a Linux/Windows CI matrix.
 - Added conservative project config and accurate project-scoped custom agents.
 - Reworked skills around Codex invocation, task-shaped delegation, explicit side-effect authority, and current session-state paths.
-- Removed duplicated Claude, Gemini, Cursor, and Antigravity compatibility layers.
+- Removed duplicated non-Codex compatibility layers.
 - Removed unused dual-language prompt loader scaffolding from the stack-agnostic template.
 - Added real template linting, tests, and fail-closed command stubs.
 - Pinned CI actions and the secret scanner to immutable revisions and scanner versions.

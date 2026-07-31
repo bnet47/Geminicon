@@ -935,7 +935,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       &lt;/div&gt;
       &lt;div&gt;
         &lt;strong&gt;Established repository&lt;/strong&gt;
-        &lt;p&gt;Keep the Codexicon source separate and run &lt;code&gt;$adopt-codexicon&lt;/code&gt; or &lt;code&gt;python scripts/codexicon.py inspect TARGET&lt;/code&gt; before authorising any writes.&lt;/p&gt;
+        &lt;p&gt;Keep the Codexicon source separate and run &lt;code&gt;$adopt-codexicon&lt;/code&gt; or &lt;code&gt;python scripts/codexicon.py inspect TARGET&lt;/code&gt; before authorising any writes. Use &lt;code&gt;docs/upgrading.md&lt;/code&gt; for the manual migration boundaries.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/div&gt;
     &lt;p class=&quot;text-small text-muted&quot;&gt;&lt;code&gt;inspect&lt;/code&gt;, &lt;code&gt;doctor&lt;/code&gt;, update planning, and &lt;code&gt;resume&lt;/code&gt; are read-only. Adoption and update mutations require &lt;code&gt;--apply&lt;/code&gt;; local conflicts and project-owned files are preserved for deliberate integration.&lt;/p&gt;
@@ -969,12 +969,12 @@ html&gt;body{padding:0}&lt;/style&gt;
           &lt;p&gt;&lt;code id=&quot;stage-command&quot;&gt;$discover&lt;/code&gt;&lt;/p&gt;
         &lt;/div&gt;
         &lt;div&gt;
-          &lt;span class=&quot;text-small text-muted&quot;&gt;Minimum configuration&lt;/span&gt;
-          &lt;p&gt;&lt;strong id=&quot;stage-model&quot;&gt;GPT-5.6 Sol · Medium&lt;/strong&gt;&lt;/p&gt;
+          &lt;span class=&quot;text-small text-muted&quot;&gt;Recommended tier and effort&lt;/span&gt;
+          &lt;p&gt;&lt;strong id=&quot;stage-model&quot;&gt;High-reasoning tier · standard effort&lt;/strong&gt;&lt;/p&gt;
         &lt;/div&gt;
         &lt;div&gt;
           &lt;span class=&quot;text-small text-muted&quot;&gt;Raise reasoning when&lt;/span&gt;
-          &lt;p id=&quot;stage-model-note&quot;&gt;Use High for regulated or unusually ambiguous products; use Extra High when a wrong charter would create major safety, compliance, or investment risk.&lt;/p&gt;
+          &lt;p id=&quot;stage-model-note&quot;&gt;Raise reasoning effort for regulated or unusually ambiguous products, especially when a wrong charter would create major safety, compliance, or investment risk.&lt;/p&gt;
         &lt;/div&gt;
         &lt;div&gt;
           &lt;span class=&quot;text-small text-muted&quot;&gt;Evidence to continue&lt;/span&gt;
@@ -992,9 +992,9 @@ html&gt;body{padding:0}&lt;/style&gt;
     &lt;/div&gt;
 
     &lt;div class=&quot;card&quot;&gt;
-      &lt;h3&gt;How to read the model floor&lt;/h3&gt;
-      &lt;p&gt;&lt;strong&gt;Reliability-first policy:&lt;/strong&gt; each project gate uses &lt;strong&gt;GPT-5.6 Sol&lt;/strong&gt;. &lt;strong&gt;Luna · Extra High&lt;/strong&gt; may assist with narrow, reversible work after the requirements are fixed, but should not own a gate. Terra, GPT-5.5, and GPT-5.4 are not recommended by this playbook.&lt;/p&gt;
-      &lt;p class=&quot;text-small text-muted&quot;&gt;This is a conservative workflow policy, not a claim that Terra is incapable. OpenAI positions Sol for complex reasoning and coding, Terra for balancing intelligence and cost, and Luna for cost-sensitive high-volume work; Luna roughly corresponds to the earlier nano tier. A model never replaces explicit done conditions, lint, tests, rendered inspection, or human approval. See the &lt;a href=&quot;https://developers.openai.com/api/docs/models&quot; target=&quot;_blank&quot; rel=&quot;noreferrer&quot;&gt;current model guide&lt;/a&gt; and &lt;a href=&quot;https://developers.openai.com/api/docs/models/gpt-5.6-luna&quot; target=&quot;_blank&quot; rel=&quot;noreferrer&quot;&gt;Luna model card&lt;/a&gt;.&lt;/p&gt;
+      &lt;h3&gt;How to choose a capability tier&lt;/h3&gt;
+      &lt;p&gt;&lt;strong&gt;Reliability-first policy:&lt;/strong&gt; use a high-reasoning tier for project gates and expensive-to-reverse decisions. A fast, low-cost tier may assist with narrow, reversible work after requirements are fixed, but should not own a gate.&lt;/p&gt;
+      &lt;p class=&quot;text-small text-muted&quot;&gt;Choose the lowest reasoning effort that reliably satisfies the task, then raise it when ambiguity, risk, or review depth requires more. A model never replaces explicit done conditions, lint, tests, rendered inspection, or human approval. Leave the concrete model choice to the user’s current Codex configuration.&lt;/p&gt;
     &lt;/div&gt;
 
     &lt;div aria-labelledby=&quot;communication-economy-heading&quot;&gt;
@@ -1205,8 +1205,8 @@ html&gt;body{padding:0}&lt;/style&gt;
           title: &#x27;Discover the project&#x27;,
           purpose: &#x27;Define the problem, user, observable outcome, constraints, and non-goals before choosing technology.&#x27;,
           command: &#x27;$discover&#x27;,
-          model: &#x27;GPT-5.6 Sol · Medium&#x27;,
-          modelNote: &#x27;Use High for regulated or unusually ambiguous products; use Extra High when a wrong charter would create major safety, compliance, or investment risk.&#x27;,
+          model: &#x27;High-reasoning tier · standard effort&#x27;,
+          modelNote: &#x27;Raise reasoning effort for regulated or unusually ambiguous products, especially when a wrong charter would create major safety, compliance, or investment risk.&#x27;,
           evidence: &#x27;An approved charter under agent_docs/briefs/.&#x27;,
           avoid: &#x27;Selecting a framework or database before the problem and constraints require one.&#x27;,
           example: &#x27;$discover We want a mobile-first sports app for community football fans to follow fixtures, live scores, standings, and match alerts. Success means a fan can find today\&#x27;s match and understand its current state in under 10 seconds. Constraints: accessible web app, no betting features, no provider selected.&#x27;
@@ -1215,8 +1215,8 @@ html&gt;body{padding:0}&lt;/style&gt;
           title: &#x27;Initialise the real environment&#x27;,
           purpose: &#x27;Choose the smallest suitable stack and replace every template stub with real setup, development, lint, test, security, Git-gate, and CI commands.&#x27;,
           command: &#x27;$init&#x27;,
-          model: &#x27;GPT-5.6 Sol · Medium&#x27;,
-          modelNote: &#x27;Use High for unfamiliar stacks or complex infrastructure; use Extra High for security, compliance, migration, or production-critical setup.&#x27;,
+          model: &#x27;High-reasoning tier · standard effort&#x27;,
+          modelNote: &#x27;Raise reasoning effort for unfamiliar stacks, complex infrastructure, security, compliance, migration, or production-critical setup.&#x27;,
           evidence: &#x27;Project identity, security and operations boundaries are filled; real commands, Git gates, CI, and supported platforms are verified.&#x27;,
           avoid: &#x27;Adding providers, dependencies, databases, or deployment services before the charter requires them.&#x27;,
           example: &#x27;$init Configure Matchday from the approved charter. Recommend the smallest stack for a responsive web app with live-score updates, create real setup/lint/test commands and CI, and do not initialise Git or add hosting unless requested.&#x27;
@@ -1225,8 +1225,8 @@ html&gt;body{padding:0}&lt;/style&gt;
           title: &#x27;Build the first useful slice&#x27;,
           purpose: &#x27;Deliver the smallest complete behaviour that proves value, using the least ceremonial workflow that fits.&#x27;,
           command: &#x27;$quick · $brainstorm · $spec · $execute-plan&#x27;,
-          model: &#x27;GPT-5.6 Sol · Low&#x27;,
-          modelNote: &#x27;Use Medium for normal multi-file features, High for architecture or long-context work, and Extra High for security, data integrity, or expensive failure modes.&#x27;,
+          model: &#x27;Default coding tier · lighter effort&#x27;,
+          modelNote: &#x27;Raise reasoning effort for architecture, long-context work, security, data integrity, or expensive failure modes.&#x27;,
           evidence: &#x27;Observable behaviour, focused tests, canonical lint and tests, and a concise report of residual gaps.&#x27;,
           avoid: &#x27;Large scaffolds, speculative abstractions, unrelated cleanup, or plans for a clear one-file change.&#x27;,
           example: &#x27;$quick Add the Matchday fixture list using the existing API client. Done when upcoming matches show competition, teams, kickoff in the user\&#x27;s timezone, loading, empty, and error states, with focused tests and full repository checks.&#x27;
@@ -1235,8 +1235,8 @@ html&gt;body{padding:0}&lt;/style&gt;
           title: &#x27;Strengthen the customer experience&#x27;,
           purpose: &#x27;Shape interfaces or marketing from real users, brand context, product truth, reachable states, and approved evidence.&#x27;,
           command: &#x27;$design-experience · $create-marketing&#x27;,
-          model: &#x27;GPT-5.6 Sol · Medium&#x27;,
-          modelNote: &#x27;Use High for a new visual system, complex interaction, or important campaign; use Extra High when trust, accessibility, or brand damage would be costly.&#x27;,
+          model: &#x27;High-reasoning tier · standard effort&#x27;,
+          modelNote: &#x27;Raise reasoning effort for a new visual system, complex interaction, important campaign, or work where trust, accessibility, or brand damage would be costly.&#x27;,
           evidence: &#x27;Rendered output, complete states, accessible behaviour, sourced claims, channel fit, and explicit unknowns.&#x27;,
           avoid: &#x27;Generic visual systems, fake metrics or proof, decorative dashboards, unsupported claims, and unverified polish.&#x27;,
           example: &#x27;$design-experience Design Matchday\&#x27;s live match centre for fans checking a phone in a noisy stadium. Preserve the current identity, shape the score, clock, incidents, lineups, loading, stale, offline, and final states, then verify rendered mobile and desktop output.&#x27;
@@ -1245,8 +1245,8 @@ html&gt;body{padding:0}&lt;/style&gt;
           title: &#x27;Assure correctness and quality&#x27;,
           purpose: &#x27;Review the work against its request, engineering contract, customer task, brand, accessibility, truth, and release risk.&#x27;,
           command: &#x27;$review · $review-creative&#x27;,
-          model: &#x27;GPT-5.6 Sol · High&#x27;,
-          modelNote: &#x27;Use Extra High for security, privacy, payments, migrations, destructive operations, or release-blocking reviews. Do not use a weaker reviewer than the builder.&#x27;,
+          model: &#x27;High-reasoning tier · deeper effort&#x27;,
+          modelNote: &#x27;Raise reasoning effort for security, privacy, payments, migrations, destructive operations, or release-blocking reviews. Do not use a weaker reviewer than the builder.&#x27;,
           evidence: &#x27;No unresolved release blockers; verification gaps are visible; lint and the full test suite pass when applicable.&#x27;,
           avoid: &#x27;Reviewing only source when rendered behaviour matters, cosmetic scoring, or manufacturing findings.&#x27;,
           example: &#x27;$review-creative Audit Matchday\&#x27;s rendered live match centre for comprehension, responsive behaviour, keyboard access, contrast, stale-score trust, generic sports-app patterns, and fabricated data. Report findings only; do not edit.&#x27;
@@ -1255,8 +1255,8 @@ html&gt;body{padding:0}&lt;/style&gt;
           title: &#x27;Prove readiness, then ship only what was authorised&#x27;,
           purpose: &#x27;Run the production gate when applicable, then perform only the explicitly requested Git action. Deployment and external writes remain separate decisions.&#x27;,
           command: &#x27;$production-readiness (launch) · $ship&#x27;,
-          model: &#x27;GPT-5.6 Sol · Low for Git / High for production&#x27;,
-          modelNote: &#x27;Use Medium for a large final diff. Use High for the production gate and Extra High for security, privacy, payments, migrations, destructive operations, or hard-to-reverse releases.&#x27;,
+          model: &#x27;Default coding tier for Git · high-reasoning tier for production&#x27;,
+          modelNote: &#x27;Raise reasoning effort for a large final diff, the production gate, security, privacy, payments, migrations, destructive operations, or hard-to-reverse releases.&#x27;,
           evidence: &#x27;Security, lint, and tests pass; launch evidence is READY or explicitly accepted; only the requested Git action is completed.&#x27;,
           avoid: &#x27;Inferring publication, pushing to main, deploying, or sending external messages from a vague request to finish.&#x27;,
           example: &#x27;$ship Verify the Matchday fixture and live-score work, create a local commit with an appropriate message, and stop. Do not push, open a pull request, deploy, or message anyone.&#x27;
@@ -1308,7 +1308,7 @@ html&gt;body{padding:0}&lt;/style&gt;
         },
         quick: {
           title: &#x27;$quick&#x27;,
-          when: &#x27;A clear change affects roughly one to three files and requires no design, dependency, schema, or architecture decision.&#x27;,
+          when: &#x27;A clear change is tightly scoped and requires no design, dependency, schema, or architecture decision.&#x27;,
           produces: &#x27;The smallest complete implementation with focused checks and canonical repository verification.&#x27;,
           next: &#x27;$review when risk warrants it&#x27;,
           prompt: &#x27;$quick Add the Matchday fixture timezone label using the existing date utility. Done when kickoff shows the viewer timezone, handles missing timezone data, has focused tests, and full lint/tests pass.&#x27;

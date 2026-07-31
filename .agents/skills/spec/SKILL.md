@@ -9,7 +9,7 @@ argument-hint: "[request to specify]"
 Announce: "I'm using spec to make the requirement executable before implementation."
 
 1. Read only the relevant project guidance and existing decisions.
-2. Ask up to three questions only for missing behavior, constraints, or acceptance evidence. Skip questions when local context resolves them.
+2. Ask targeted questions only for missing behavior, constraints, or acceptance evidence. Skip questions when local context resolves them.
 3. Save `agent_docs/briefs/[YYYY-MM-DD]-[slug].md`, adding `-v2`, `-v3`, and so on rather than overwriting:
 
 ```markdown

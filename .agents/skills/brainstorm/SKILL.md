@@ -13,7 +13,7 @@ Read the project identity and only the architecture, conventions, decisions, or 
 
 ## 2. Resolve the problem
 
-Ask one targeted question at a time, normally no more than five total. Stop when you can state:
+Ask one targeted question at a time and stop when you can state:
 
 - the problem and affected person;
 - verifiable success;

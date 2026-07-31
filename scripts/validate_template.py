@@ -18,6 +18,7 @@ except ModuleNotFoundError:  # Python 3.10 remains common in WSL distributions.
 
 ROOT = Path(__file__).resolve().parents[1]
 TEXT_SUFFIXES = {".html", ".md", ".toml", ".json", ".py", ".ps1", ".sh", ".yml", ".yaml", ".txt"}
+GUIDANCE_SUFFIXES = {".md", ".toml", ".txt"}
 SKILL_INVOCATIONS = (
     "discover",
     "init",
@@ -44,6 +45,54 @@ SKILL_INVOCATIONS = (
 MAX_PROJECT_GUIDANCE_CHARS = 8192
 MAX_SKILL_DESCRIPTION_CHARS = 200
 MAX_REPO_SKILL_CATALOG_CHARS = 3800
+NUMBER_WORD = r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)"
+WORKFLOW_UNIT = r"(?:files?|agents?|subagents?|questions?|lines?|steps?|tasks?|reviewers?|reviews?)"
+DURABLE_GUIDANCE_PATTERNS = {
+    "named or versioned model choice": re.compile(
+        r"\b(?:(?:gpt|o)[-_]?\d|claude|gemini|sol|luna|terra)\b",
+        flags=re.IGNORECASE,
+    ),
+    "token-unit pricing": re.compile(
+        r"(?:"
+        r"\bper\s+(?:million|thousand)\s+(?:input\s+|output\s+|cached\s+)?tokens?\b|"
+        r"[$€£]\s*\d+(?:\.\d+)?\s*(?:/|per)\s*"
+        r"(?:\d+(?:\.\d+)?\s*[km]?\s*)?(?:input\s+|output\s+|cached\s+)?tokens?\b"
+        r")",
+        flags=re.IGNORECASE,
+    ),
+    "fixed pricing discount": re.compile(
+        r"(?:\b\d+(?:\.\d+)?\s*%\s*(?:discount|off)\b|"
+        r"\b(?:half|quarter)\s+(?:price|priced|cost)\b)",
+        flags=re.IGNORECASE,
+    ),
+    "fixed context threshold": re.compile(
+        r"(?:"
+        r"\b\d+(?:\.\d+)?\s*%\s+(?:of\s+)?(?:the\s+)?(?:context|token|compaction)\b|"
+        r"\b\d+(?:\.\d+)?\s*[km]?\s*tokens?\s+"
+        r"(?:remain(?:s|ing)?|left|before\s+compact(?:ion)?)\b"
+        r")",
+        flags=re.IGNORECASE,
+    ),
+    "fixed workflow threshold": re.compile(
+        rf"\b(?:up\s+to|at\s+most|no\s+more\s+than|more\s+than|fewer\s+than|"
+        rf"less\s+than|maximum\s+of|minimum\s+of)\s+"
+        rf"(?:(?:about|roughly|approximately|around|typically|normally)\s+)?"
+        rf"(?:\d+(?:\.\d+)?|{NUMBER_WORD})\b",
+        flags=re.IGNORECASE,
+    ),
+    "fixed workflow count": re.compile(
+        rf"(?:"
+        rf"\b(?:roughly|about|approximately)\s+"
+        rf"(?:\d+|{NUMBER_WORD})\s*(?:-|to)\s*(?:\d+|{NUMBER_WORD})\s+{WORKFLOW_UNIT}\b|"
+        rf"\b(?:use|return|spawn|delegate\s+to|limit(?:\s+\w+)?\s+to)\s+"
+        rf"(?:roughly\s+|about\s+|approximately\s+)?(?:\d+|{NUMBER_WORD})"
+        rf"(?:\s*(?:-|to)\s*(?:\d+|{NUMBER_WORD}))?\s+{WORKFLOW_UNIT}\b|"
+        rf"\b(?:\d+|{NUMBER_WORD})\s*(?:-|to)\s*(?:\d+|{NUMBER_WORD})\s+"
+        rf"{WORKFLOW_UNIT}\b"
+        rf")",
+        flags=re.IGNORECASE,
+    ),
+}
 
 
 def rel(path: Path) -> str:
@@ -60,6 +109,30 @@ def text_files() -> list[Path]:
         and not ignored.intersection(path.relative_to(ROOT).parts)
         and ".codex-state" not in path.relative_to(ROOT).parts
     )
+
+
+def guidance_files() -> list[Path]:
+    files = [
+        path
+        for path in text_files()
+        if path.suffix.lower() in GUIDANCE_SUFFIXES or path.name == "TEMPLATE_VERSION"
+    ]
+    version_file = ROOT / "TEMPLATE_VERSION"
+    if version_file.is_file():
+        files.append(version_file)
+    return sorted(set(files))
+
+
+def durable_guidance_findings(content: str) -> list[str]:
+    return [
+        label
+        for label, pattern in DURABLE_GUIDANCE_PATTERNS.items()
+        if pattern.search(content)
+    ]
+
+
+def has_active_mcp_servers(config: dict) -> bool:
+    return bool(config.get("mcp_servers"))
 
 
 def parse_frontmatter(path: Path) -> dict[str, str]:
@@ -99,9 +172,13 @@ def parse_template_toml(path: Path) -> dict:
             continue
         if line.startswith("[") and line.endswith("]"):
             section = line[1:-1].strip()
-            if not section or "." in section:
+            if not section:
                 raise ValueError(f"unsupported section: {line}")
-            current = result.setdefault(section, {})
+            current = result
+            for part in section.split("."):
+                if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_-]*", part):
+                    raise ValueError(f"unsupported section: {line}")
+                current = current.setdefault(part, {})
             continue
         if "=" not in line:
             raise ValueError(f"invalid TOML line: {line}")
@@ -328,6 +405,8 @@ def validate(*, release: bool = False) -> list[str]:
             continue
         if toml_path.name == "config.toml":
             config_value = value
+            if has_active_mcp_servers(value):
+                errors.append(".codex/config.toml contains active MCP server configuration")
         if toml_path.parent.name == "agents":
             for field in ("name", "description", "developer_instructions"):
                 if not value.get(field):
@@ -346,18 +425,6 @@ def validate(*, release: bool = False) -> list[str]:
             errors.append(".codex/config.toml must enable documented features.hooks")
         if not isinstance(features, dict) or features.get("multi_agent") is not True:
             errors.append(".codex/config.toml must enable documented features.multi_agent")
-        agents = config_value.get("agents")
-        if not isinstance(agents, dict):
-            errors.append(".codex/config.toml requires an agents table")
-        else:
-            concurrency = agents.get("max_concurrent_threads_per_session")
-            if not isinstance(concurrency, int) or isinstance(concurrency, bool) or concurrency < 1:
-                errors.append(
-                    ".codex/config.toml requires a positive agents.max_concurrent_threads_per_session"
-                )
-            for unsupported in ("max_depth", "max_threads"):
-                if unsupported in agents:
-                    errors.append(f".codex/config.toml uses unsupported or legacy agents.{unsupported}")
 
     agent_names = {path.stem for path in (ROOT / ".codex/agents").glob("*.toml")}
     missing_agents = {"implementer", "researcher", "reviewer"} - agent_names
@@ -484,6 +551,20 @@ def validate(*, release: bool = False) -> list[str]:
         content = path.read_text(encoding="utf-8")
         if machine_path.search(content):
             errors.append(f"machine-specific path or identity remains in {rel(path)}")
+
+    for path in guidance_files():
+        content = path.read_text(encoding="utf-8")
+        for label in durable_guidance_findings(content):
+            errors.append(f"{rel(path)} contains prohibited {label}")
+
+    config_text = (ROOT / ".codex/config.toml").read_text(encoding="utf-8")
+    for required_example in (
+        "# [mcp_servers.",
+        "# enabled = false",
+        '# default_tools_approval_mode = "prompt"',
+    ):
+        if required_example not in config_text:
+            errors.append(f".codex/config.toml lacks disabled MCP example: {required_example}")
 
     for directory in ("briefs", "plans", "sessions"):
         task_records = sorted((ROOT / "agent_docs" / directory).glob("*.md"))

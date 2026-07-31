@@ -19,6 +19,7 @@ Ask only for decisions that cannot be inferred safely:
 
 - language, framework, data store, and deploy target;
 - whether an existing remote/repository must be preserved;
+- whether the project needs external documentation or system context through MCP;
 - any version or platform constraints.
 
 When the user has no preference, recommend the smallest stack that fits the charter and explain the tradeoff briefly. Use `$architecture-review` if the choice is expensive to reverse.
@@ -36,6 +37,7 @@ When the user has no preference, recommend the smallest stack that fits the char
 - Preserve the lint/test verification receipt contract: call `.codex/hooks/codex_hook.py emit-success lint|test` only after the underlying check succeeds. If the project removes that contract, update the hooks, tests, and `docs/codex.md` together.
 - Replace the template validation workflow in `.github/workflows/ci.yml` with CI that installs the selected stack and runs the same canonical lint, test, and security scripts.
 - Create `.env.example` with names and comments only when environment variables are needed. Never create or read a real credential file.
+- Leave MCP absent unless the project needs external context. When needed, start from the commented project pattern, review the server and tool schemas, keep it disabled until the user trusts it, prefer read-only tools and scoped credentials, and record the trust boundary in `agent_docs/security.md`.
 - Update `.gitignore` for generated outputs and local state.
 - Initialize Git only when no repository exists and the user chose a fresh local repository. Do not commit, add a remote, push, or open a PR unless separately requested.
 - When Git is enabled, inspect any existing hooks configuration before running `scripts/install-git-hooks.sh` or `.ps1`. Preserve or deliberately integrate existing hooks; never silently overwrite a different hooks path.

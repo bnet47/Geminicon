@@ -6,7 +6,7 @@
 
 ## Context
 
-The original template mixed Antigravity, Gemini, Claude Code, Cursor, and an incomplete Codex compatibility layer. Instructions and skills were duplicated across tool-specific directories, Codex hooks contained an absolute path to one workstation while writing state under `.claude/`, and several workflows performed commits or pushes without making that authority explicit. Stack-agnostic claims also conflicted with shipping unused Python and TypeScript prompt loaders.
+The original template mixed several agent-specific compatibility layers with an incomplete Codex integration. Instructions and skills were duplicated across tool-specific directories, hooks contained an absolute path to one workstation while writing state under a legacy tool directory, and several workflows performed commits or pushes without making that authority explicit. Stack-agnostic claims also conflicted with shipping unused Python and TypeScript prompt loaders.
 
 Codex natively supports root and nested `AGENTS.md` guidance, repository skills in `.agents/skills/`, project configuration and hooks in `.codex/`, project-scoped custom agents, MCP configuration, and managed worktrees. These surfaces remove the need for compatibility copies.
 
@@ -32,7 +32,7 @@ This structure matches Codex discovery and configuration semantics, reduces alwa
 | Option | Benefits | Costs / risks | Why not chosen |
 |---|---|---|---|
 | Keep every harness as a first-class target | Broad nominal compatibility | Duplicate skills and hooks drift; unclear authority; larger maintenance surface | Compatibility was already incorrect and weakened the Codex experience |
-| Keep Antigravity primary and add Codex shims | Minimal migration | Preserves wrong invocation syntax, state paths, models, and hook assumptions | Does not satisfy the Codex-first goal |
+| Keep the prior harness primary and add Codex shims | Minimal migration | Preserves wrong invocation syntax, state paths, models, and hook assumptions | Does not satisfy the Codex-first goal |
 | Codex-only plugin | Easy distribution | Adds packaging and install lifecycle before the repository workflow is proven | Repo-scoped skills and config are simpler for the template stage |
 
 ## Consequences

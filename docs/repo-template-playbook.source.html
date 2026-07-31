@@ -185,7 +185,7 @@
       </div>
       <div>
         <strong>Established repository</strong>
-        <p>Keep the Codexicon source separate and run <code>$adopt-codexicon</code> or <code>python scripts/codexicon.py inspect TARGET</code> before authorising any writes.</p>
+        <p>Keep the Codexicon source separate and run <code>$adopt-codexicon</code> or <code>python scripts/codexicon.py inspect TARGET</code> before authorising any writes. Use <code>docs/upgrading.md</code> for the manual migration boundaries.</p>
       </div>
     </div>
     <p class="text-small text-muted"><code>inspect</code>, <code>doctor</code>, update planning, and <code>resume</code> are read-only. Adoption and update mutations require <code>--apply</code>; local conflicts and project-owned files are preserved for deliberate integration.</p>
@@ -219,12 +219,12 @@
           <p><code id="stage-command">$discover</code></p>
         </div>
         <div>
-          <span class="text-small text-muted">Minimum configuration</span>
-          <p><strong id="stage-model">GPT-5.6 Sol · Medium</strong></p>
+          <span class="text-small text-muted">Recommended tier and effort</span>
+          <p><strong id="stage-model">High-reasoning tier · standard effort</strong></p>
         </div>
         <div>
           <span class="text-small text-muted">Raise reasoning when</span>
-          <p id="stage-model-note">Use High for regulated or unusually ambiguous products; use Extra High when a wrong charter would create major safety, compliance, or investment risk.</p>
+          <p id="stage-model-note">Raise reasoning effort for regulated or unusually ambiguous products, especially when a wrong charter would create major safety, compliance, or investment risk.</p>
         </div>
         <div>
           <span class="text-small text-muted">Evidence to continue</span>
@@ -242,9 +242,9 @@
     </div>
 
     <div class="card">
-      <h3>How to read the model floor</h3>
-      <p><strong>Reliability-first policy:</strong> each project gate uses <strong>GPT-5.6 Sol</strong>. <strong>Luna · Extra High</strong> may assist with narrow, reversible work after the requirements are fixed, but should not own a gate. Terra, GPT-5.5, and GPT-5.4 are not recommended by this playbook.</p>
-      <p class="text-small text-muted">This is a conservative workflow policy, not a claim that Terra is incapable. OpenAI positions Sol for complex reasoning and coding, Terra for balancing intelligence and cost, and Luna for cost-sensitive high-volume work; Luna roughly corresponds to the earlier nano tier. A model never replaces explicit done conditions, lint, tests, rendered inspection, or human approval. See the <a href="https://developers.openai.com/api/docs/models" target="_blank" rel="noreferrer">current model guide</a> and <a href="https://developers.openai.com/api/docs/models/gpt-5.6-luna" target="_blank" rel="noreferrer">Luna model card</a>.</p>
+      <h3>How to choose a capability tier</h3>
+      <p><strong>Reliability-first policy:</strong> use a high-reasoning tier for project gates and expensive-to-reverse decisions. A fast, low-cost tier may assist with narrow, reversible work after requirements are fixed, but should not own a gate.</p>
+      <p class="text-small text-muted">Choose the lowest reasoning effort that reliably satisfies the task, then raise it when ambiguity, risk, or review depth requires more. A model never replaces explicit done conditions, lint, tests, rendered inspection, or human approval. Leave the concrete model choice to the user’s current Codex configuration.</p>
     </div>
 
     <div aria-labelledby="communication-economy-heading">
@@ -455,8 +455,8 @@
           title: 'Discover the project',
           purpose: 'Define the problem, user, observable outcome, constraints, and non-goals before choosing technology.',
           command: '$discover',
-          model: 'GPT-5.6 Sol · Medium',
-          modelNote: 'Use High for regulated or unusually ambiguous products; use Extra High when a wrong charter would create major safety, compliance, or investment risk.',
+          model: 'High-reasoning tier · standard effort',
+          modelNote: 'Raise reasoning effort for regulated or unusually ambiguous products, especially when a wrong charter would create major safety, compliance, or investment risk.',
           evidence: 'An approved charter under agent_docs/briefs/.',
           avoid: 'Selecting a framework or database before the problem and constraints require one.',
           example: '$discover We want a mobile-first sports app for community football fans to follow fixtures, live scores, standings, and match alerts. Success means a fan can find today\'s match and understand its current state in under 10 seconds. Constraints: accessible web app, no betting features, no provider selected.'
@@ -465,8 +465,8 @@
           title: 'Initialise the real environment',
           purpose: 'Choose the smallest suitable stack and replace every template stub with real setup, development, lint, test, security, Git-gate, and CI commands.',
           command: '$init',
-          model: 'GPT-5.6 Sol · Medium',
-          modelNote: 'Use High for unfamiliar stacks or complex infrastructure; use Extra High for security, compliance, migration, or production-critical setup.',
+          model: 'High-reasoning tier · standard effort',
+          modelNote: 'Raise reasoning effort for unfamiliar stacks, complex infrastructure, security, compliance, migration, or production-critical setup.',
           evidence: 'Project identity, security and operations boundaries are filled; real commands, Git gates, CI, and supported platforms are verified.',
           avoid: 'Adding providers, dependencies, databases, or deployment services before the charter requires them.',
           example: '$init Configure Matchday from the approved charter. Recommend the smallest stack for a responsive web app with live-score updates, create real setup/lint/test commands and CI, and do not initialise Git or add hosting unless requested.'
@@ -475,8 +475,8 @@
           title: 'Build the first useful slice',
           purpose: 'Deliver the smallest complete behaviour that proves value, using the least ceremonial workflow that fits.',
           command: '$quick · $brainstorm · $spec · $execute-plan',
-          model: 'GPT-5.6 Sol · Low',
-          modelNote: 'Use Medium for normal multi-file features, High for architecture or long-context work, and Extra High for security, data integrity, or expensive failure modes.',
+          model: 'Default coding tier · lighter effort',
+          modelNote: 'Raise reasoning effort for architecture, long-context work, security, data integrity, or expensive failure modes.',
           evidence: 'Observable behaviour, focused tests, canonical lint and tests, and a concise report of residual gaps.',
           avoid: 'Large scaffolds, speculative abstractions, unrelated cleanup, or plans for a clear one-file change.',
           example: '$quick Add the Matchday fixture list using the existing API client. Done when upcoming matches show competition, teams, kickoff in the user\'s timezone, loading, empty, and error states, with focused tests and full repository checks.'
@@ -485,8 +485,8 @@
           title: 'Strengthen the customer experience',
           purpose: 'Shape interfaces or marketing from real users, brand context, product truth, reachable states, and approved evidence.',
           command: '$design-experience · $create-marketing',
-          model: 'GPT-5.6 Sol · Medium',
-          modelNote: 'Use High for a new visual system, complex interaction, or important campaign; use Extra High when trust, accessibility, or brand damage would be costly.',
+          model: 'High-reasoning tier · standard effort',
+          modelNote: 'Raise reasoning effort for a new visual system, complex interaction, important campaign, or work where trust, accessibility, or brand damage would be costly.',
           evidence: 'Rendered output, complete states, accessible behaviour, sourced claims, channel fit, and explicit unknowns.',
           avoid: 'Generic visual systems, fake metrics or proof, decorative dashboards, unsupported claims, and unverified polish.',
           example: '$design-experience Design Matchday\'s live match centre for fans checking a phone in a noisy stadium. Preserve the current identity, shape the score, clock, incidents, lineups, loading, stale, offline, and final states, then verify rendered mobile and desktop output.'
@@ -495,8 +495,8 @@
           title: 'Assure correctness and quality',
           purpose: 'Review the work against its request, engineering contract, customer task, brand, accessibility, truth, and release risk.',
           command: '$review · $review-creative',
-          model: 'GPT-5.6 Sol · High',
-          modelNote: 'Use Extra High for security, privacy, payments, migrations, destructive operations, or release-blocking reviews. Do not use a weaker reviewer than the builder.',
+          model: 'High-reasoning tier · deeper effort',
+          modelNote: 'Raise reasoning effort for security, privacy, payments, migrations, destructive operations, or release-blocking reviews. Do not use a weaker reviewer than the builder.',
           evidence: 'No unresolved release blockers; verification gaps are visible; lint and the full test suite pass when applicable.',
           avoid: 'Reviewing only source when rendered behaviour matters, cosmetic scoring, or manufacturing findings.',
           example: '$review-creative Audit Matchday\'s rendered live match centre for comprehension, responsive behaviour, keyboard access, contrast, stale-score trust, generic sports-app patterns, and fabricated data. Report findings only; do not edit.'
@@ -505,8 +505,8 @@
           title: 'Prove readiness, then ship only what was authorised',
           purpose: 'Run the production gate when applicable, then perform only the explicitly requested Git action. Deployment and external writes remain separate decisions.',
           command: '$production-readiness (launch) · $ship',
-          model: 'GPT-5.6 Sol · Low for Git / High for production',
-          modelNote: 'Use Medium for a large final diff. Use High for the production gate and Extra High for security, privacy, payments, migrations, destructive operations, or hard-to-reverse releases.',
+          model: 'Default coding tier for Git · high-reasoning tier for production',
+          modelNote: 'Raise reasoning effort for a large final diff, the production gate, security, privacy, payments, migrations, destructive operations, or hard-to-reverse releases.',
           evidence: 'Security, lint, and tests pass; launch evidence is READY or explicitly accepted; only the requested Git action is completed.',
           avoid: 'Inferring publication, pushing to main, deploying, or sending external messages from a vague request to finish.',
           example: '$ship Verify the Matchday fixture and live-score work, create a local commit with an appropriate message, and stop. Do not push, open a pull request, deploy, or message anyone.'
@@ -558,7 +558,7 @@
         },
         quick: {
           title: '$quick',
-          when: 'A clear change affects roughly one to three files and requires no design, dependency, schema, or architecture decision.',
+          when: 'A clear change is tightly scoped and requires no design, dependency, schema, or architecture decision.',
           produces: 'The smallest complete implementation with focused checks and canonical repository verification.',
           next: '$review when risk warrants it',
           prompt: '$quick Add the Matchday fixture timezone label using the existing date utility. Done when kickoff shows the viewer timezone, handles missing timezone data, has focused tests, and full lint/tests pass.'

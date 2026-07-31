@@ -2,7 +2,7 @@
 
 [![Template CI](https://github.com/bnet47/codexicon/actions/workflows/ci.yml/badge.svg)](https://github.com/bnet47/codexicon/actions/workflows/ci.yml)
 [![MIT License](https://img.shields.io/badge/license-MIT-0f766e.svg)](LICENSE)
-[![Template version](https://img.shields.io/badge/template-v2.6.0--dev-2563eb.svg)](TEMPLATE_VERSION)
+[![Template version](https://img.shields.io/badge/template-v2.6.1--dev-2563eb.svg)](TEMPLATE_VERSION)
 
 **A production-minded project template for building with Codex.**
 
@@ -134,7 +134,7 @@ ownership. Do not deploy or accept risk on my behalf.
 | Assure | `$review`, `$review-creative`, `$architecture-review` | Actionable findings resolved and canonical checks passing |
 | Release | `$production-readiness`, then `$ship` | Readiness verdict plus only the authorized Git action |
 
-The [live visual playbook](https://bnet47.github.io/codexicon/repo-template-playbook.html) explains each stage, every repository skill, example prompts, context loading, safety boundaries, and conservative model floors. Its standalone HTML source remains in `docs/repo-template-playbook.html` for local and offline use.
+The [live visual playbook](https://bnet47.github.io/codexicon/repo-template-playbook.html) explains each stage, every repository skill, example prompts, context loading, safety boundaries, and model-agnostic capability tiers. Its standalone HTML source remains in `docs/repo-template-playbook.html` for local and offline use.
 
 ## Workflow map
 
@@ -209,6 +209,7 @@ The root `.codexicon.json` is the source ownership contract used by the reposito
 - [Interactive visual playbook](https://bnet47.github.io/codexicon/repo-template-playbook.html)
 - [Start a project](START_HERE.md)
 - [Codex configuration and hooks](docs/codex.md)
+- [Upgrade an existing project](docs/upgrading.md)
 - [Agent and delegation patterns](docs/agent-patterns.md)
 - [Deployment command pattern](docs/deploy-patterns.md)
 - [Architecture decision template](docs/adr-template.md)
@@ -246,7 +247,7 @@ python scripts/codexicon.py update --root /path/to/project --source /path/to/new
 python scripts/codexicon.py update --root /path/to/project --source /path/to/new-codexicon --apply
 ```
 
-The first command is a read-only plan. Apply uses atomic writes and rollback, leaves locally modified files as conflicts, and never commits or publishes the result. Project-owned commands, guidance, architecture, and decisions still require deliberate integration.
+The first command is a read-only plan. Apply uses atomic writes and rollback, leaves locally modified files as conflicts, and never commits or publishes the result. Project-owned commands, guidance, architecture, and decisions still require deliberate integration. The [upgrade guide](docs/upgrading.md) explains the same preservation boundaries for manual migrations.
 
 ## Community
 

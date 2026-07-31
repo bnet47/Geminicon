@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import re
 import secrets
@@ -24,7 +25,10 @@ STATE_DIR = Path(os.environ.get("CODEX_STATE_DIR", ROOT / ".codex-state"))
 STATE_FILE_OVERRIDE = os.environ.get("CODEX_STATE_FILE")
 STATE_FILE = Path(STATE_FILE_OVERRIDE) if STATE_FILE_OVERRIDE else STATE_DIR / "session-default.json"
 RECEIPT_DIR = STATE_DIR / "receipts"
+SUMMARY_DIR = STATE_DIR / "summaries"
 RECEIPT_TTL_SECONDS = 3600
+STATE_LOCK_TIMEOUT_SECONDS = 2.0
+STATE_LOCK_RETRY_SECONDS = 0.025
 
 SENSITIVE_PATH = re.compile(
     r"(?ix)(?:"
@@ -209,13 +213,64 @@ def configure_state_file(payload: dict[str, Any]) -> None:
     STATE_FILE = STATE_DIR / f"session-{digest}.json"
 
 
+def session_digest(session_id: Any) -> str:
+    return hashlib.sha256(str(session_id).encode("utf-8")).hexdigest()[:20]
+
+
+def counter(value: Any) -> int:
+    try:
+        return max(0, int(value))
+    except (OverflowError, TypeError, ValueError):
+        return 0
+
+
+def epoch(value: Any) -> float:
+    try:
+        result = float(value)
+    except (OverflowError, TypeError, ValueError):
+        return 0.0
+    return result if math.isfinite(result) and result >= 0 else 0.0
+
+
+def write_session_summary(state: dict[str, Any]) -> None:
+    """Write supported local telemetry without making hook success depend on it."""
+
+    session_id = state.get("session_id")
+    if not session_id:
+        return
+    summary = {
+        "schema_version": 1,
+        "session_id_hash": session_digest(session_id),
+        "session_started_at": state.get("session_started_at"),
+        "last_event_at": state.get("last_event_at"),
+        "session_ended_at": state.get("session_ended_at"),
+        "turn_count": counter(state.get("turn_count")),
+        "compact_count": counter(state.get("compact_count")),
+        "usage": {
+            "availability": "not_exposed_by_hook_payloads",
+            "input_tokens": None,
+            "cached_input_tokens": None,
+            "reasoning_output_tokens": None,
+        },
+    }
+    try:
+        save_json_atomic(
+            SUMMARY_DIR / f"session-{summary['session_id_hash']}.json",
+            summary,
+        )
+    except (OSError, TypeError, ValueError):
+        pass
+
+
 @contextmanager
-def state_lock() -> Iterator[None]:
-    """Serialize state updates across agents sharing a Codex session."""
+def state_lock(*, blocking: bool = True) -> Iterator[bool]:
+    """Serialize state updates with a deadline; telemetry may opt out immediately."""
 
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     lock_path = STATE_FILE.with_suffix(STATE_FILE.suffix + ".lock")
     with lock_path.open("a+b") as handle:
+        deadline = time.monotonic() + STATE_LOCK_TIMEOUT_SECONDS
+        acquired = False
         if os.name == "nt":
             import msvcrt
 
@@ -223,27 +278,50 @@ def state_lock() -> Iterator[None]:
             if handle.tell() == 0:
                 handle.write(b"\0")
                 handle.flush()
-            handle.seek(0)
-            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
-            try:
-                yield
-            finally:
-                handle.seek(0)
-                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+            while not acquired:
+                try:
+                    handle.seek(0)
+                    msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+                    acquired = True
+                except OSError:
+                    if not blocking:
+                        yield False
+                        return
+                    if time.monotonic() >= deadline:
+                        raise TimeoutError(f"timed out locking state file: {STATE_FILE.name}")
+                    time.sleep(STATE_LOCK_RETRY_SECONDS)
         else:
             import fcntl
 
-            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
-            try:
-                yield
-            finally:
+            while not acquired:
+                try:
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    acquired = True
+                except BlockingIOError:
+                    if not blocking:
+                        yield False
+                        return
+                    if time.monotonic() >= deadline:
+                        raise TimeoutError(f"timed out locking state file: {STATE_FILE.name}")
+                    time.sleep(STATE_LOCK_RETRY_SECONDS)
+        try:
+            yield True
+        finally:
+            if os.name == "nt":
+                import msvcrt
+
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                import fcntl
+
                 fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 
 def valid_state(value: Any) -> bool:
     return (
         isinstance(value, dict)
-        and value.get("schema_version") == 2
+        and value.get("schema_version") == 4
         and isinstance(value.get("has_writes"), bool)
         and isinstance(value.get("lint_passed"), bool)
         and isinstance(value.get("test_passed"), bool)
@@ -283,19 +361,32 @@ def save_json_atomic(path: Path, value: dict[str, Any]) -> None:
         raise
 
 
-def mutate_state(mutator: Callable[[dict[str, Any]], None]) -> dict[str, Any]:
-    with state_lock():
+def mutate_state(
+    mutator: Callable[[dict[str, Any]], None],
+    *,
+    summarize: bool = False,
+    blocking: bool = True,
+) -> dict[str, Any] | None:
+    with state_lock(blocking=blocking) as acquired:
+        if not acquired:
+            return None
         state = load_state_unlocked()
         if state and not valid_state(state):
             state = {}
-        state.setdefault("schema_version", 2)
+        state["schema_version"] = 4
         mutator(state)
         save_json_atomic(STATE_FILE, state)
+        if summarize:
+            write_session_summary(state)
         return dict(state)
 
 
 def read_state(strict: bool = False) -> dict[str, Any]:
-    with state_lock():
+    with state_lock() as acquired:
+        if not acquired:
+            if strict:
+                raise StateLoadError("verification state is busy")
+            return {}
         return dict(load_state_unlocked(strict=strict))
 
 
@@ -304,13 +395,24 @@ def reset_state(payload: dict[str, Any]) -> int:
     stamp, rendered = utc_now()
 
     def reset(state: dict[str, Any]) -> None:
+        consumed_receipts = state.get("consumed_receipts")
+        if not isinstance(consumed_receipts, list):
+            consumed_receipts = []
+        consumed_receipts = [
+            value for value in consumed_receipts if isinstance(value, str)
+        ]
         state.clear()
         state.update(
             {
-                "schema_version": 2,
+                "schema_version": 4,
                 "session_id": payload.get("session_id"),
                 "session_started_at": rendered,
                 "session_started_epoch": stamp,
+                "last_event_at": rendered,
+                "turn_count": 0,
+                "compact_count": 0,
+                "seen_turn_ids": [],
+                "consumed_receipts": consumed_receipts,
                 "has_writes": False,
                 "lint_passed": False,
                 "test_passed": False,
@@ -318,7 +420,13 @@ def reset_state(payload: dict[str, Any]) -> int:
             }
         )
 
-    mutate_state(reset)
+    state = mutate_state(reset, summarize=True, blocking=False)
+    if state is None:
+        print(
+            "Session state is busy; initialization was not recorded. Retry the session start or clear.",
+            file=sys.stderr,
+        )
+        return 2
     return 0
 
 
@@ -411,10 +519,15 @@ def resume_state(payload: dict[str, Any]) -> int:
         except StateLoadError:
             recovered = True
             state = {
-                "schema_version": 2,
+                "schema_version": 4,
                 "session_id": payload.get("session_id"),
                 "session_started_at": rendered,
                 "session_started_epoch": stamp,
+                "last_event_at": rendered,
+                "turn_count": 0,
+                "compact_count": 0,
+                "seen_turn_ids": [],
+                "consumed_receipts": [],
                 "has_writes": True,
                 "lint_passed": False,
                 "test_passed": False,
@@ -657,12 +770,58 @@ def record_compact(payload: dict[str, Any]) -> int:
     def update(state: dict[str, Any]) -> None:
         state.update(
             session_id=payload.get("session_id") or state.get("session_id"),
+            last_event_at=rendered,
             last_compact_at=rendered,
             last_compact_epoch=stamp,
-            compact_count=int(state.get("compact_count", 0)) + 1,
+            compact_count=counter(state.get("compact_count")) + 1,
         )
 
-    mutate_state(update)
+    try:
+        mutate_state(update, blocking=False)
+    except (OSError, OverflowError, TypeError, ValueError):
+        pass
+    return 0
+
+
+def record_turn(payload: dict[str, Any]) -> int:
+    _, rendered = utc_now()
+    turn_id = payload.get("turn_id")
+
+    def update(state: dict[str, Any]) -> None:
+        state.update(
+            session_id=payload.get("session_id") or state.get("session_id"),
+            last_event_at=rendered,
+        )
+        seen_turn_ids = state.get("seen_turn_ids")
+        if not isinstance(seen_turn_ids, list):
+            seen_turn_ids = []
+        seen_turn_ids = [value for value in seen_turn_ids if isinstance(value, str)]
+        if isinstance(turn_id, str) and turn_id and turn_id not in seen_turn_ids:
+            seen_turn_ids.append(turn_id)
+            state.update(seen_turn_ids=seen_turn_ids, turn_count=len(seen_turn_ids))
+
+    try:
+        mutate_state(update, blocking=False)
+    except (OSError, OverflowError, TypeError, ValueError):
+        pass
+    return 0
+
+
+def end_session(payload: dict[str, Any]) -> int:
+    stamp, rendered = utc_now()
+
+    def update(state: dict[str, Any]) -> None:
+        state.update(
+            session_id=payload.get("session_id") or state.get("session_id"),
+            last_event_at=rendered,
+            session_ended_at=rendered,
+            session_ended_epoch=stamp,
+        )
+
+    try:
+        mutate_state(update, summarize=True, blocking=False)
+    except (OSError, OverflowError, TypeError, ValueError):
+        pass
     return 0
 
 
@@ -763,14 +922,14 @@ def prune_receipts(now: float | None = None) -> None:
 
     current = time.time() if now is None else now
     try:
-        paths = list(RECEIPT_DIR.glob("*.json"))
+        paths = [*RECEIPT_DIR.glob("*.json"), *RECEIPT_DIR.glob("*.claim")]
     except OSError:
         return
     for path in paths:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
-            created = float(value.get("created_epoch", 0))
-            if current - created <= RECEIPT_TTL_SECONDS and created <= current + 60:
+            created = epoch(value.get("created_epoch"))
+            if created and current - created <= RECEIPT_TTL_SECONDS and created <= current + 60:
                 continue
         except (json.JSONDecodeError, OSError, TypeError, ValueError):
             pass
@@ -795,35 +954,75 @@ def emit_receipt(check: str) -> int:
     return 0
 
 
-def consume_receipt(check: str, response: Any) -> bool:
+def claim_receipt(
+    check: str,
+    response: Any,
+    session_id: Any,
+) -> tuple[str, Path, float] | None:
+    """Atomically claim a receipt, leaving it recoverable until state is persisted."""
+
     text = response if isinstance(response, str) else json.dumps(response, sort_keys=True)
     now = time.time()
     prune_receipts(now)
     for marker_check, receipt_id in RECEIPT_MARKER.findall(text):
         if marker_check != check:
             continue
-        path = RECEIPT_DIR / f"{receipt_id}.json"
+        source = RECEIPT_DIR / f"{receipt_id}.json"
+        claim = RECEIPT_DIR / f"{receipt_id}-{session_digest(session_id)}.claim"
         try:
-            value = json.loads(path.read_text(encoding="utf-8"))
-            if value.get("check") != check or now - float(value.get("created_epoch", 0)) > RECEIPT_TTL_SECONDS:
+            if not claim.exists():
+                try:
+                    os.replace(source, claim)
+                except FileNotFoundError:
+                    if not claim.exists():
+                        continue
+            value = json.loads(claim.read_text(encoding="utf-8"))
+            created = epoch(value.get("created_epoch"))
+            if (
+                value.get("check") != check
+                or not created
+                or now - created > RECEIPT_TTL_SECONDS
+                or created > now + 60
+            ):
+                claim.unlink(missing_ok=True)
                 continue
-            path.unlink()
-            return True
+            return receipt_id, claim, created
         except (FileNotFoundError, json.JSONDecodeError, OSError, TypeError, ValueError):
             continue
-    return False
+    return None
 
 
-def set_check_result(check: str, passed: bool) -> None:
+def set_check_result(
+    check: str,
+    passed: bool,
+    receipt_id: str | None = None,
+    receipt_epoch: float = 0.0,
+) -> bool:
     stamp, rendered = utc_now()
+    accepted = passed
 
     def update(state: dict[str, Any]) -> None:
-        state[f"{check}_passed"] = passed
-        if passed:
+        nonlocal accepted
+        consumed = state.get("consumed_receipts")
+        if not isinstance(consumed, list):
+            consumed = []
+        consumed = [value for value in consumed if isinstance(value, str)]
+        if receipt_id:
+            if receipt_id in consumed:
+                accepted = False
+                return
+            consumed.append(receipt_id)
+            state["consumed_receipts"] = consumed
+            session_started_epoch = epoch(state.get("session_started_epoch"))
+            if not receipt_epoch or receipt_epoch < session_started_epoch:
+                accepted = False
+        state[f"{check}_passed"] = accepted
+        if accepted:
             state[f"{check}_at"] = rendered
-            state[f"{check}_epoch"] = stamp
+            state[f"{check}_epoch"] = receipt_epoch or stamp
 
     mutate_state(update)
+    return accepted
 
 
 def record_shell(payload: dict[str, Any]) -> int:
@@ -831,7 +1030,22 @@ def record_shell(payload: dict[str, Any]) -> int:
     checks = canonical_checks(command)
     if checks is not None:
         for check in checks:
-            set_check_result(check, consume_receipt(check, payload.get("tool_response", "")))
+            if check not in {"lint", "test"}:
+                continue
+            claimed = claim_receipt(
+                check,
+                payload.get("tool_response", ""),
+                payload.get("session_id") or STATE_FILE.name,
+            )
+            if claimed is None:
+                set_check_result(check, False)
+                continue
+            receipt_id, claim_path, receipt_epoch = claimed
+            set_check_result(check, True, receipt_id, receipt_epoch)
+            try:
+                claim_path.unlink()
+            except FileNotFoundError:
+                pass
         return 0
     if definitely_read_only(command):
         return 0
@@ -854,13 +1068,20 @@ def verify_stop(payload: dict[str, Any]) -> int:
     if not state.get("has_writes"):
         return 0
 
-    write_epoch = float(state.get("last_write_epoch", 0))
+    write_epoch = epoch(state.get("last_write_epoch"))
     missing: list[str] = []
-    if not state.get("lint_passed") or float(state.get("lint_epoch", 0)) < write_epoch:
+    lint_epoch = epoch(state.get("lint_epoch"))
+    if not write_epoch or not state.get("lint_passed") or not lint_epoch or lint_epoch < write_epoch:
         missing.append("lint")
     if state.get("test_required"):
-        test_write_epoch = float(state.get("last_test_relevant_write_epoch", write_epoch))
-        if not state.get("test_passed") or float(state.get("test_epoch", 0)) < test_write_epoch:
+        test_write_epoch = epoch(state.get("last_test_relevant_write_epoch", write_epoch))
+        test_epoch = epoch(state.get("test_epoch"))
+        if (
+            not test_write_epoch
+            or not state.get("test_passed")
+            or not test_epoch
+            or test_epoch < test_write_epoch
+        ):
             missing.append("tests")
     if not missing:
         return 0
@@ -881,10 +1102,15 @@ def verify_stop(payload: dict[str, Any]) -> int:
     return 2
 
 
+def record_stop(payload: dict[str, Any]) -> int:
+    record_turn(payload)
+    return verify_stop(payload)
+
+
 def main(argv: list[str]) -> int:
     if len(argv) < 2:
         print(
-            "Usage: codex_hook.py [session-start|session-resume|protect-secrets|record-write|record-shell|record-compact|verify-stop|emit-success]",
+            "Usage: codex_hook.py [session-start|session-resume|protect-secrets|record-write|record-shell|record-compact|record-turn|record-stop|end-session|verify-stop|emit-success]",
             file=sys.stderr,
         )
         return 2
@@ -902,6 +1128,9 @@ def main(argv: list[str]) -> int:
         "record-write": record_write,
         "record-shell": record_shell,
         "record-compact": record_compact,
+        "record-turn": record_turn,
+        "record-stop": record_stop,
+        "end-session": end_session,
         "verify-stop": verify_stop,
     }
     handler = handlers.get(action)

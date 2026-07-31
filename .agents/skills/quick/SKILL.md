@@ -1,6 +1,6 @@
 ---
 name: quick
-description: Implement a clear change of roughly one to three files with no design, dependency, or schema decision. Route uncertainty elsewhere.
+description: Implement a clear, tightly scoped change with no design, dependency, or schema decision. Route uncertainty elsewhere.
 argument-hint: "[small change]"
 ---
 
@@ -12,7 +12,7 @@ Use this path only when the desired behavior and implementation approach are cle
 
 Inspect the target and confirm:
 
-- the change is coherent and normally limited to one to three files;
+- the change is coherent and tightly coupled;
 - no new dependency, migration, or expensive-to-reverse choice is required;
 - acceptance can be verified with existing commands or a small focused test.
 

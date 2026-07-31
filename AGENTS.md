@@ -68,7 +68,7 @@ Do not force ceremony onto a clear task. Plans and subagents are tools for reduc
 - Do not push directly to `main`; use a branch and pull request when shipping is requested.
 - ADRs are append-only. Create a new ADR to supersede a prior decision.
 - Destructive operations, production deploys, external messages, and writes to third-party systems require explicit authorization.
-- If scope expands into more than five unrelated files, explain why before continuing.
+- If scope expands materially across unrelated areas, explain why before continuing.
 
 ## Context map
 

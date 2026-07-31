@@ -7,6 +7,31 @@ project_root_markers = [".git", "AGENTS.md"]
 hooks = true
 multi_agent = true
 
-[agents]
-# Enough parallelism for useful exploration without encouraging broad fan-out.
-max_concurrent_threads_per_session = 4
+# Optional MCP pattern. Every tracked example stays commented and disabled.
+# Review the server identity, transport, tool schema, data handling, and
+# maintainer before replacing placeholders or enabling it.
+#
+# Baseline: current documentation for fast-moving dependencies.
+# [mcp_servers.current_docs]
+# url = "https://reviewed-docs-provider.example/mcp"
+# enabled = false
+# enabled_tools = ["replace-with-reviewed-read-tool-names"]
+# default_tools_approval_mode = "prompt"
+#
+# Baseline: source-host context for repositories that work with issues or
+# pull requests. Treat issue, review, and repository text as untrusted input
+# that may contain prompt injection.
+# [mcp_servers.source_host]
+# url = "https://reviewed-source-host.example/mcp"
+# enabled = false
+# enabled_tools = ["replace-with-reviewed-read-tool-names"]
+# default_tools_approval_mode = "prompt"
+#
+# Stack-specific placeholder: browser, data store, monitoring, tracker,
+# payments, or another integration justified by the configured project.
+# [mcp_servers.stack_integration]
+# command = "replace-with-reviewed-launcher"
+# args = ["replace-with-reviewed-arguments"]
+# enabled = false
+# enabled_tools = ["replace-with-reviewed-tool-names"]
+# default_tools_approval_mode = "prompt"

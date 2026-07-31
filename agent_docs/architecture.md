@@ -1,6 +1,6 @@
 # Architecture — [PROJECT_NAME]
 
-> Keep this as the current map of the system, normally no more than two pages. Record why choices were made in ADRs, not here.
+> Keep this as a concise current map of the system. Record why choices were made in ADRs, not here.
 
 **Last updated:** [YYYY-MM-DD]
 

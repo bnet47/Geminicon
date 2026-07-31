@@ -16,7 +16,7 @@ Inspect `agent_docs/briefs/` and the identity section in `AGENTS.md`.
 
 ## 2. Build understanding
 
-Ask one question at a time and stop as soon as the answer is clear. Prefer no more than six questions total.
+Ask one question at a time and stop as soon as the answer is clear. Keep the exchange focused on unresolved decisions.
 
 Cover only unresolved parts of:
 

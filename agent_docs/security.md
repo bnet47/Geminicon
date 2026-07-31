@@ -43,6 +43,8 @@ Cover applicable misuse of authentication, authorization, data access, uploads/p
 - **Rotation and revocation:** [owner, trigger, test]
 - **Outbound allowlist / egress:** [destinations and enforcement]
 - **Third-party credentials and scopes:** [least-privilege scope and ownership]
+- **External tools and MCP:** [trusted server identity, reviewed transport, read-only or approval-gated tools, and owner]
+- **Untrusted tool output:** [how documentation, issue, review, browser, log, and server content is prevented from overriding durable rules or authorizing writes]
 
 ## Supply chain and assurance
 
@@ -56,4 +58,3 @@ Cover applicable misuse of authentication, authorization, data access, uploads/p
 | Risk | Severity | Mitigation / decision | Accountable owner | Review or expiry date | Evidence |
 |---|---|---|---|---|---|
 | | | | | | |
-

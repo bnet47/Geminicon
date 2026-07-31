@@ -361,6 +361,203 @@ def save_json_atomic(path: Path, value: dict[str, Any]) -> None:
         raise
 
 
+def pending_write_directory() -> Path:
+    return STATE_FILE.parent / "pending-writes"
+
+
+def trusted_pending_write_directory(*, create: bool) -> Path:
+    directory = pending_write_directory()
+    try:
+        if directory.is_symlink():
+            raise StateLoadError("pending write storage is not a trusted directory")
+        if directory.exists():
+            if not directory.is_dir():
+                raise StateLoadError("pending write storage is not a trusted directory")
+        elif create:
+            directory.mkdir(parents=True, exist_ok=True)
+            if directory.is_symlink() or not directory.is_dir():
+                raise StateLoadError("pending write storage is not a trusted directory")
+    except StateLoadError:
+        raise
+    except OSError as exc:
+        raise StateLoadError("pending write state is unreadable") from exc
+    return directory
+
+
+def pending_write_key() -> str:
+    material = str(STATE_FILE.resolve())
+    return hashlib.sha256(material.encode("utf-8")).hexdigest()[:20]
+
+
+def marker_tool_key(tool_use_id: Any) -> str | None:
+    if not isinstance(tool_use_id, str) or not tool_use_id:
+        return None
+    return hashlib.sha256(tool_use_id.encode("utf-8")).hexdigest()[:20]
+
+
+def pending_write_marker_path(tool_use_id: Any) -> Path | None:
+    tool_key = marker_tool_key(tool_use_id)
+    if tool_key is None:
+        return None
+    return pending_write_directory() / f"{pending_write_key()}-{tool_key}.json"
+
+
+def write_pending_write_marker(
+    payload: dict[str, Any],
+    *,
+    status: str,
+    test_relevant: bool,
+) -> Path:
+    stamp, rendered = utc_now()
+    directory = trusted_pending_write_directory(create=True)
+    path = pending_write_marker_path(payload.get("tool_use_id"))
+    if path is None:
+        if status == "pending":
+            raise StateLoadError("tool_use_id is missing from PreToolUse payload")
+        path = directory / (
+            f"{pending_write_key()}-unpaired-{secrets.token_hex(16)}.json"
+        )
+
+    created_epoch = stamp
+    created_at = rendered
+    existing_test_relevant = False
+    if path.exists():
+        try:
+            existing = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(existing, dict) and existing.get("schema_version") == 1:
+                created_epoch = epoch(existing.get("created_epoch")) or stamp
+                candidate_at = existing.get("created_at")
+                if isinstance(candidate_at, str) and candidate_at:
+                    created_at = candidate_at
+                existing_test_relevant = existing.get("test_relevant") is not False
+        except (json.JSONDecodeError, OSError, TypeError, ValueError):
+            existing_test_relevant = True
+
+    save_json_atomic(
+        path,
+        {
+            "schema_version": 1,
+            "status": status,
+            "created_at": created_at,
+            "created_epoch": created_epoch,
+            "completed_at": rendered if status == "completed" else None,
+            "completed_epoch": stamp if status == "completed" else None,
+            "test_relevant": existing_test_relevant or test_relevant,
+        },
+    )
+    return path
+
+
+def pending_write_paths() -> list[Path]:
+    directory = trusted_pending_write_directory(create=False)
+    try:
+        if not directory.exists():
+            return []
+        prefix = f"{pending_write_key()}-"
+        return sorted(
+            path
+            for path in directory.iterdir()
+            if path.name.startswith(prefix) and path.suffix == ".json"
+        )
+    except StateLoadError:
+        raise
+    except OSError as exc:
+        raise StateLoadError("pending write state is unreadable") from exc
+
+
+def load_pending_write_markers(paths: list[Path]) -> list[dict[str, Any]]:
+    fallback_epoch, fallback_at = utc_now()
+    markers: list[dict[str, Any]] = []
+    for path in paths:
+        try:
+            marker = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(marker, dict) or marker.get("schema_version") != 1:
+                marker = {}
+        except (json.JSONDecodeError, OSError, TypeError, ValueError):
+            marker = {}
+
+        status = marker.get("status")
+        if status not in {"pending", "completed"}:
+            status = "completed"
+        marker_epoch = epoch(marker.get("created_epoch")) or fallback_epoch
+        marker_at = marker.get("created_at")
+        if not isinstance(marker_at, str) or not marker_at:
+            marker_at = fallback_at
+        markers.append(
+            {
+                "path": path,
+                "status": status,
+                "created_epoch": marker_epoch,
+                "created_at": marker_at,
+                "test_relevant": marker.get("test_relevant") is not False,
+            }
+        )
+    return markers
+
+
+def reconcile_pending_writes_unlocked(
+    state: dict[str, Any],
+    markers: list[dict[str, Any]],
+    *,
+    force_tests: bool = False,
+) -> None:
+    state["active_write_intents"] = sum(
+        marker.get("status") == "pending" for marker in markers
+    )
+    if not markers:
+        return
+
+    fallback_epoch, fallback_at = utc_now()
+    latest_write_epoch = epoch(state.get("last_write_epoch"))
+    latest_write_at = state.get("last_write_at")
+    latest_test_write_epoch = epoch(state.get("last_test_relevant_write_epoch"))
+    latest_test_write_at = state.get("last_test_relevant_write_at")
+    test_required = bool(state.get("test_required")) or force_tests
+
+    for marker in markers:
+        marker_epoch = epoch(marker.get("created_epoch")) or fallback_epoch
+        marker_at = marker.get("created_at") or fallback_at
+        if marker_epoch >= latest_write_epoch:
+            latest_write_epoch = marker_epoch
+            latest_write_at = marker_at
+
+        marker_requires_tests = force_tests or marker.get("test_relevant") is not False
+        if marker_requires_tests:
+            test_required = True
+            if marker_epoch >= latest_test_write_epoch:
+                latest_test_write_epoch = marker_epoch
+                latest_test_write_at = marker_at
+
+    state.update(
+        schema_version=4,
+        has_writes=True,
+        lint_passed=False,
+        test_passed=bool(state.get("test_passed")),
+        test_required=test_required,
+        last_write_at=latest_write_at or fallback_at,
+        last_write_epoch=latest_write_epoch or fallback_epoch,
+    )
+    if test_required:
+        state.update(
+            test_passed=False,
+            last_test_relevant_write_at=latest_test_write_at or fallback_at,
+            last_test_relevant_write_epoch=latest_test_write_epoch or fallback_epoch,
+        )
+
+
+def remove_completed_write_markers(markers: list[dict[str, Any]]) -> None:
+    for marker in markers:
+        if marker.get("status") != "completed":
+            continue
+        path = marker["path"]
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+        except OSError as exc:
+            raise StateLoadError("completed pending-write marker could not be removed") from exc
+
+
 def mutate_state(
     mutator: Callable[[dict[str, Any]], None],
     *,
@@ -370,12 +567,30 @@ def mutate_state(
     with state_lock(blocking=blocking) as acquired:
         if not acquired:
             return None
+        markers = load_pending_write_markers(pending_write_paths())
         state = load_state_unlocked()
-        if state and not valid_state(state):
-            state = {}
-        state["schema_version"] = 4
+        state_was_trusted = valid_state(state)
+        if not state_was_trusted:
+            state = {
+                "schema_version": 4,
+                "has_writes": False,
+                "lint_passed": False,
+                "test_passed": False,
+                "test_required": False,
+            }
+        reconcile_pending_writes_unlocked(
+            state,
+            markers,
+            force_tests=bool(markers) and not state_was_trusted,
+        )
         mutator(state)
+        reconcile_pending_writes_unlocked(
+            state,
+            markers,
+            force_tests=bool(markers) and not state_was_trusted,
+        )
         save_json_atomic(STATE_FILE, state)
+        remove_completed_write_markers(markers)
         if summarize:
             write_session_summary(state)
         return dict(state)
@@ -387,7 +602,31 @@ def read_state(strict: bool = False) -> dict[str, Any]:
             if strict:
                 raise StateLoadError("verification state is busy")
             return {}
-        return dict(load_state_unlocked(strict=strict))
+        markers = load_pending_write_markers(pending_write_paths())
+        state_was_trusted = True
+        try:
+            state = load_state_unlocked(strict=strict)
+        except StateLoadError:
+            if not markers:
+                raise
+            state_was_trusted = False
+            state = {
+                "schema_version": 4,
+                "has_writes": False,
+                "lint_passed": False,
+                "test_passed": False,
+                "test_required": False,
+            }
+        previous_active = state.get("active_write_intents")
+        reconcile_pending_writes_unlocked(
+            state,
+            markers,
+            force_tests=bool(markers) and not state_was_trusted,
+        )
+        if markers or previous_active != state.get("active_write_intents"):
+            save_json_atomic(STATE_FILE, state)
+            remove_completed_write_markers(markers)
+        return dict(state)
 
 
 def reset_state(payload: dict[str, Any]) -> int:
@@ -743,6 +982,16 @@ def record_write(payload: dict[str, Any], force_tests: bool | None = None) -> in
     stamp, rendered = utc_now()
     test_relevant = not documentation_only(changed_paths(payload)) if force_tests is None else force_tests
 
+    try:
+        write_pending_write_marker(
+            payload,
+            status="completed",
+            test_relevant=test_relevant,
+        )
+    except (OSError, StateLoadError) as exc:
+        print(f"Write verification could not be invalidated durably ({exc}).", file=sys.stderr)
+        return 2
+
     def update(state: dict[str, Any]) -> None:
         state.update(
             session_id=payload.get("session_id") or state.get("session_id"),
@@ -760,7 +1009,14 @@ def record_write(payload: dict[str, Any], force_tests: bool | None = None) -> in
                 last_test_relevant_write_epoch=stamp,
             )
 
-    mutate_state(update)
+    try:
+        mutate_state(update)
+    except (StateLoadError, TimeoutError) as exc:
+        print(
+            f"Verification state is busy; write invalidation remains pending ({exc}).",
+            file=sys.stderr,
+        )
+        return 2
     return 0
 
 
@@ -917,6 +1173,40 @@ def definitely_read_only_segment(command: str) -> bool:
     return False
 
 
+def prepare_write(payload: dict[str, Any]) -> int:
+    tool_name = str(payload.get("tool_name", "")).lower()
+    if tool_name == "bash":
+        command = command_text(payload)
+        if canonical_checks(command) is not None or definitely_read_only(command):
+            return 0
+        test_relevant = True
+    elif tool_name in {"apply_patch", "edit", "write"}:
+        test_relevant = not documentation_only(changed_paths(payload))
+    else:
+        return 0
+
+    try:
+        with state_lock() as acquired:
+            if not acquired:
+                raise StateLoadError("verification state is busy")
+            write_pending_write_marker(
+                payload,
+                status="pending",
+                test_relevant=test_relevant,
+            )
+    except (OSError, StateLoadError, TimeoutError) as exc:
+        print(f"Write intent could not be recorded durably ({exc}).", file=sys.stderr)
+        return 2
+    return 0
+
+
+def prepare_tool(payload: dict[str, Any]) -> int:
+    protected = protect_secrets(payload)
+    if protected:
+        return protected
+    return prepare_write(payload)
+
+
 def prune_receipts(now: float | None = None) -> None:
     """Remove expired or malformed one-use receipts without exposing their content."""
 
@@ -1003,6 +1293,9 @@ def set_check_result(
 
     def update(state: dict[str, Any]) -> None:
         nonlocal accepted
+        if counter(state.get("active_write_intents")):
+            accepted = False
+            return
         consumed = state.get("consumed_receipts")
         if not isinstance(consumed, list):
             consumed = []
@@ -1110,7 +1403,7 @@ def record_stop(payload: dict[str, Any]) -> int:
 def main(argv: list[str]) -> int:
     if len(argv) < 2:
         print(
-            "Usage: codex_hook.py [session-start|session-resume|protect-secrets|record-write|record-shell|record-compact|record-turn|record-stop|end-session|verify-stop|emit-success]",
+            "Usage: codex_hook.py [session-start|session-resume|prepare-tool|protect-secrets|record-write|record-shell|record-compact|record-turn|record-stop|end-session|verify-stop|emit-success]",
             file=sys.stderr,
         )
         return 2
@@ -1124,6 +1417,7 @@ def main(argv: list[str]) -> int:
     handlers = {
         "session-start": reset_state,
         "session-resume": resume_state,
+        "prepare-tool": prepare_tool,
         "protect-secrets": protect_secrets,
         "record-write": record_write,
         "record-shell": record_shell,

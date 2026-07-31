@@ -4,6 +4,7 @@ Status: Unreleased
 
 ## 2.6.1 — Harness reliability hardening
 
+- Made write invalidation fail closed under prolonged state-lock contention by pairing durable pre-tool mutation intents with their post-tool completion before later verification.
 - Made lifecycle telemetry non-blocking under agent contention and moved start/end summaries inside the state lock so an older snapshot cannot overwrite newer session state.
 - Deduplicated completed turns across the full session and made malformed numeric telemetry degrade safely.
 - Made verification receipts recoverable until their success is durably recorded, with replay protection retained in session state.

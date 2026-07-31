@@ -4,9 +4,9 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-0f766e.svg)](LICENSE)
 [![Template version](https://img.shields.io/badge/template-v2.6.1--dev-2563eb.svg)](TEMPLATE_VERSION)
 
-**A production-minded project template for building with Codex.**
+**A production-minded Codex agent harness for new and established repositories.**
 
-Codexicon gives new and established repositories an explicit path from an idea to verified delivery: durable project guidance, progressively loaded skills, canonical checks, credential safeguards, production-readiness review, and clear authority boundaries for Git, deployment, and external systems.
+Codexicon makes agent-driven development inspectable from project discovery through verified delivery. It combines durable project guidance, progressively loaded skills, repeatable verification, credential safeguards, safe adoption and upgrades, and explicit authority boundaries for Git, deployments, MCP tools, and other external systems.
 
 It is intentionally not an application starter or a framework opinion. You define the product first, then Codex configures the smallest suitable stack for that project.
 
@@ -18,9 +18,11 @@ Starting from an empty repository leaves every Codex task to rediscover how the 
 
 - **Start with the problem:** `$discover` defines the user, outcome, constraints, evidence, and non-goals before technology is selected.
 - **Configure deliberately:** `$init` turns the template into a real stack with working setup, development, lint, test, security, and CI commands.
+- **Adopt without replacing project-owned work:** read-only inspection, explicit apply, baseline tracking, and conflict-preserving updates bring the harness into established repositories.
 - **Use the smallest workflow:** clear changes stay lightweight; ambiguity, architecture, design, marketing, and production risk receive the additional process they need.
 - **Keep context lean:** `AGENTS.md` contains durable rules while complete workflows and project facts load only when relevant.
-- **Verify with evidence:** humans, Codex, Git hooks, and CI use the same canonical commands.
+- **Verify across the lifecycle:** session-aware hooks invalidate stale results after writes and recover conservatively after resume or compaction; humans, Codex, Git hooks, and CI use the same canonical commands.
+- **Treat external context as untrusted:** integrations stay disabled until reviewed, tools stay narrowly scoped, and external content cannot grant authority for writes.
 - **Keep side effects explicit:** commits, pushes, pull requests, deployments, messages, spend, and production changes require clear authority.
 
 ## Start in five minutes

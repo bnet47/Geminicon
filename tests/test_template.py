@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import threading
 import time
 import unittest
 import uuid
@@ -124,8 +125,15 @@ class TemplateValidationTests(unittest.TestCase):
                             if event == "SessionStart":
                                 payload["source"] = "startup"
                             elif event == "PreToolUse":
-                                payload.update(tool_name="Bash", tool_input={"command": "git status"})
+                                payload.update(
+                                    tool_name="Bash",
+                                    tool_use_id=f"bootstrap-pre-{group_index}-{handler_index}",
+                                    tool_input={"command": "git status"},
+                                )
                             elif event == "PostToolUse":
+                                payload["tool_use_id"] = (
+                                    f"bootstrap-post-{group_index}-{handler_index}"
+                                )
                                 if "apply_patch" in (group.get("matcher") or ""):
                                     payload.update(
                                         tool_name="apply_patch",
@@ -464,6 +472,216 @@ class CodexHookTests(unittest.TestCase):
         self.assertLess(elapsed, 1.0)
         current = json.loads(self.state_file.read_text(encoding="utf-8"))
         self.assertEqual(current["session_started_at"], original["session_started_at"])
+
+    def test_write_invalidation_survives_busy_state_lock(self) -> None:
+        self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
+        self.assertEqual(
+            self.run_hook(
+                "record-write",
+                {"session_id": "s1", "tool_input": {"file_path": "src/before.py"}},
+            ).returncode,
+            0,
+        )
+        self.record_success("lint")
+        self.record_success("test")
+        self.assertEqual(
+            self.run_hook("verify-stop", {"session_id": "s1", "stop_hook_active": False}).returncode,
+            0,
+        )
+
+        busy_write = {
+            "session_id": "s1",
+            "tool_name": "apply_patch",
+            "tool_use_id": "busy-write",
+            "tool_input": {"file_path": "src/after.py"},
+        }
+        prepared = self.run_hook("prepare-tool", busy_write)
+        self.assertEqual(prepared.returncode, 0, prepared.stderr)
+
+        original_state_file = CODEX_HOOK.STATE_FILE
+        CODEX_HOOK.STATE_FILE = self.state_file
+        try:
+            with CODEX_HOOK.state_lock() as acquired:
+                self.assertTrue(acquired)
+                result = self.run_hook("record-write", busy_write)
+        finally:
+            CODEX_HOOK.STATE_FILE = original_state_file
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("write invalidation remains pending", result.stderr)
+        stale = json.loads(self.state_file.read_text(encoding="utf-8"))
+        self.assertTrue(stale["lint_passed"])
+        self.assertTrue(stale["test_passed"])
+        self.assertTrue(list((self.temp_dir / "pending-writes").glob("*.json")))
+
+        blocked = self.run_hook(
+            "verify-stop",
+            {"session_id": "s1", "stop_hook_active": False},
+        )
+        self.assertEqual(blocked.returncode, 2)
+        self.assertIn("Missing or stale: lint, tests", blocked.stderr)
+        reconciled = json.loads(self.state_file.read_text(encoding="utf-8"))
+        self.assertFalse(reconciled["lint_passed"])
+        self.assertFalse(reconciled["test_passed"])
+        self.assertFalse(list((self.temp_dir / "pending-writes").glob("*.json")))
+
+        self.record_success("lint")
+        self.record_success("test")
+        allowed = self.run_hook(
+            "verify-stop",
+            {"session_id": "s1", "stop_hook_active": False},
+        )
+        self.assertEqual(allowed.returncode, 0, allowed.stderr)
+
+    def test_pending_write_intent_blocks_checks_and_stop_until_completion(self) -> None:
+        self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
+        payload = {
+            "session_id": "s1",
+            "tool_name": "apply_patch",
+            "tool_use_id": "active-write",
+            "tool_input": {"file_path": "src/example.py"},
+        }
+        prepared = self.run_hook("prepare-tool", payload)
+        self.assertEqual(prepared.returncode, 0, prepared.stderr)
+
+        self.record_success("lint")
+        self.record_success("test")
+        blocked = self.run_hook(
+            "verify-stop",
+            {"session_id": "s1", "stop_hook_active": False},
+        )
+        self.assertEqual(blocked.returncode, 2)
+        self.assertTrue(list((self.temp_dir / "pending-writes").glob("*.json")))
+
+        completed = self.run_hook("record-write", payload)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.record_success("lint")
+        self.record_success("test")
+        allowed = self.run_hook(
+            "verify-stop",
+            {"session_id": "s1", "stop_hook_active": False},
+        )
+        self.assertEqual(allowed.returncode, 0, allowed.stderr)
+
+    def test_pretool_intent_waits_for_state_snapshot_lock(self) -> None:
+        self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
+        payload = {
+            "session_id": "s1",
+            "tool_name": "apply_patch",
+            "tool_use_id": "serialized-intent",
+            "tool_input": {"file_path": "src/example.py"},
+        }
+        results: list[subprocess.CompletedProcess[str]] = []
+
+        original_state_file = CODEX_HOOK.STATE_FILE
+        CODEX_HOOK.STATE_FILE = self.state_file
+        try:
+            with CODEX_HOOK.state_lock() as acquired:
+                self.assertTrue(acquired)
+                worker = threading.Thread(
+                    target=lambda: results.append(self.run_hook("prepare-tool", payload))
+                )
+                worker.start()
+                time.sleep(0.2)
+                self.assertTrue(worker.is_alive())
+                self.assertFalse(list((self.temp_dir / "pending-writes").glob("*.json")))
+            worker.join(timeout=5)
+        finally:
+            CODEX_HOOK.STATE_FILE = original_state_file
+
+        self.assertFalse(worker.is_alive())
+        self.assertEqual(results[0].returncode, 0, results[0].stderr)
+        self.assertTrue(list((self.temp_dir / "pending-writes").glob("*.json")))
+
+    def test_unusable_pending_write_storage_fails_closed(self) -> None:
+        self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
+        pending_directory = self.temp_dir / "pending-writes"
+        pending_directory.write_text("not a directory", encoding="utf-8")
+        payload = {
+            "session_id": "s1",
+            "tool_name": "apply_patch",
+            "tool_use_id": "blocked-storage",
+            "tool_input": {"file_path": "src/example.py"},
+        }
+
+        prepared = self.run_hook("prepare-tool", payload)
+        self.assertEqual(prepared.returncode, 2)
+        stopped = self.run_hook(
+            "verify-stop",
+            {"session_id": "s1", "stop_hook_active": False},
+        )
+        self.assertEqual(stopped.returncode, 2)
+        self.assertIn("pending write storage is not a trusted directory", stopped.stderr)
+
+    def test_pending_write_storage_symlink_is_rejected(self) -> None:
+        self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
+        external = self.temp_dir / "external"
+        external.mkdir()
+        try:
+            (self.temp_dir / "pending-writes").symlink_to(external, target_is_directory=True)
+        except OSError:
+            self.skipTest("symbolic links are unavailable")
+        payload = {
+            "session_id": "s1",
+            "tool_name": "apply_patch",
+            "tool_use_id": "symlink-storage",
+            "tool_input": {"file_path": "src/example.py"},
+        }
+
+        prepared = self.run_hook("prepare-tool", payload)
+        self.assertEqual(prepared.returncode, 2)
+        self.assertFalse(list(external.iterdir()))
+        stopped = self.run_hook(
+            "verify-stop",
+            {"session_id": "s1", "stop_hook_active": False},
+        )
+        self.assertEqual(stopped.returncode, 2)
+        self.assertIn("pending write storage is not a trusted directory", stopped.stderr)
+
+    def test_session_reset_preserves_pending_write_intent(self) -> None:
+        self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
+        payload = {
+            "session_id": "s1",
+            "tool_name": "apply_patch",
+            "tool_use_id": "reset-write",
+            "tool_input": {"file_path": "src/example.py"},
+        }
+        self.assertEqual(self.run_hook("prepare-tool", payload).returncode, 0)
+
+        reset = self.run_hook("session-start", {"session_id": "s1", "source": "clear"})
+        self.assertEqual(reset.returncode, 0, reset.stderr)
+        state = json.loads(self.state_file.read_text(encoding="utf-8"))
+        self.assertTrue(state["has_writes"])
+        self.assertEqual(state["active_write_intents"], 1)
+        self.assertTrue(list((self.temp_dir / "pending-writes").glob("*.json")))
+        blocked = self.run_hook(
+            "verify-stop",
+            {"session_id": "s1", "stop_hook_active": False},
+        )
+        self.assertEqual(blocked.returncode, 2)
+
+    def test_documentation_marker_on_malformed_state_requires_tests(self) -> None:
+        self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)
+        self.state_file.write_text("{", encoding="utf-8")
+        payload = {
+            "session_id": "s1",
+            "tool_name": "apply_patch",
+            "tool_use_id": "malformed-doc-write",
+            "tool_input": {"file_path": "README.md"},
+        }
+        self.assertEqual(self.run_hook("prepare-tool", payload).returncode, 0)
+        recorded = self.run_hook("record-write", payload)
+        self.assertEqual(recorded.returncode, 0, recorded.stderr)
+        state = json.loads(self.state_file.read_text(encoding="utf-8"))
+        self.assertTrue(state["test_required"])
+
+        self.record_success("lint")
+        blocked = self.run_hook(
+            "verify-stop",
+            {"session_id": "s1", "stop_hook_active": False},
+        )
+        self.assertEqual(blocked.returncode, 2)
+        self.assertIn("Missing or stale: tests", blocked.stderr)
 
     def test_summary_write_is_serialized_with_authoritative_state(self) -> None:
         self.assertEqual(self.run_hook("session-start", {"session_id": "s1"}).returncode, 0)

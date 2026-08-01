@@ -20,11 +20,6 @@ application_default_credentials.json
 .config/gh/hosts.yml
 .terraform.d/credentials.tfrc.json
 
-# Codex local state (kept outside protected .codex/ so sandboxed commands can update it)
-.codex-state/
-.codexicon/
-.codex/config.local.toml
-.codex-log/
 
 # Node
 node_modules/
@@ -58,6 +53,7 @@ out/
 Thumbs.db
 
 # Ephemeral task artifacts
+.gemini/scratch/
 agent_docs/plans/task-*-brief.md
 agent_docs/plans/task-*-report.md
 TEMPLATE_FEEDBACK.md

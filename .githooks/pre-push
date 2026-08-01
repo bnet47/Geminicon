@@ -3,6 +3,14 @@ set -eu
 
 root="$(git rev-parse --show-toplevel)"
 cd "$root"
-bash ./scripts/lint.sh
-bash ./scripts/test.sh
-bash ./scripts/security.sh
+
+if command -v bash >/dev/null 2>&1; then
+  bash ./scripts/lint.sh
+  bash ./scripts/test.sh
+  bash ./scripts/security.sh
+else
+  sh ./scripts/lint.sh
+  sh ./scripts/test.sh
+  sh ./scripts/security.sh
+fi
+

@@ -27,7 +27,7 @@ Review each change for local path, runtime, policy, and platform assumptions bef
 - `README.md` and public project identity;
 - real setup, development, lint, test, security, and deployment scripts;
 - stack-specific CI and release configuration;
-- `.codex/config.toml`, hooks, and custom agents when the project has local policy;
+- `.gemini/config.toml`, hooks, and custom agents when the project has local policy;
 - `.agents/skills/` when workflows were customized;
 - `agent_docs/`, including architecture, data, conventions, security, operations, decisions, briefs, and plans;
 - `SECURITY.md`, particularly the real private reporting route and accountable owner;
@@ -43,5 +43,5 @@ Never replace a project-specific command with a template stub or restore a delet
 - External integrations remain absent, commented, or disabled until explicitly reviewed and trusted.
 - Hook changes preserve or deliberately migrate verification behavior.
 - The project’s canonical lint, tests, and security checks pass.
-- Any live hook or integration change is reviewed in the Codex surface where it will run.
+- Any live hook or integration change is reviewed in the Gemini Antigravity surface where it will run.
 - The project records which template release was reviewed and which changes were declined.

@@ -23,6 +23,9 @@ def load_scanner():
     return module
 
 
+import tempfile
+
+
 class InterfaceScannerTests(unittest.TestCase):
     def test_reports_review_signals_without_failing_by_default(self) -> None:
         scanner = load_scanner()
@@ -37,9 +40,8 @@ class InterfaceScannerTests(unittest.TestCase):
         self.assertEqual({item.code for item in findings}, {"gradient-text", "transition-all"})
 
     def test_cli_can_be_opted_into_failure(self) -> None:
-        directory = ROOT / ".codex-state" / "tests" / f"scanner-{uuid.uuid4().hex}"
-        directory.mkdir(parents=True, exist_ok=False)
-        try:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            directory = Path(tmpdir)
             source = directory / "example.css"
             source.write_text("button:focus { outline: none; }", encoding="utf-8")
 
@@ -58,8 +60,6 @@ class InterfaceScannerTests(unittest.TestCase):
             self.assertEqual(advisory.returncode, 0, advisory.stdout + advisory.stderr)
             self.assertEqual(strict.returncode, 1, strict.stdout + strict.stderr)
             self.assertIn("focus-outline-removed", advisory.stdout)
-        finally:
-            shutil.rmtree(directory, ignore_errors=True)
 
 
 if __name__ == "__main__":

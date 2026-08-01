@@ -16,7 +16,7 @@ This guide covers the public template itself, not projects created from it.
 1. Update the version and dated notes in `TEMPLATE_VERSION`.
 2. Confirm `README.md`, `START_HERE.md`, the visual playbook, and skill catalog describe the same lifecycle.
 3. Run Windows and POSIX lint, tests, and security checks.
-4. Run `python scripts/validate_template.py --release` to reject repository-local briefs, plans, and checkpoints before tagging.
+4. Run `./scripts/lint.ps1` to reject repository-local briefs, plans, and checkpoints before tagging.
 5. Run the production-readiness skill validator and creative scanner when those surfaces changed.
 6. Confirm the playbook source and standalone output match.
 7. Search for machine-specific paths, credentials, obsolete harness files, placeholders outside intentional project templates, and internal task records.
@@ -41,7 +41,7 @@ Keep the `SKILL.md` body procedural and concise. Put detailed variant guidance i
 
 ## Supporting generated projects
 
-Projects created from Codexicon have independent histories and do not receive automatic updates. Keep `.codexicon.json` limited to real harness integration points and assign project-owned commands/guidance conservatively. Test adoption and update from the prior release: unchanged managed files update, retired unchanged files recoverably remove, local modifications conflict, malformed state fails safely, and no plan mode writes.
+Projects created from Codexicon have independent histories and do not receive automatic updates. Keep `.gemini/config.toml` limited to real harness integration points and assign project-owned commands/guidance conservatively. Test adoption and update from the prior release: unchanged managed files update, retired unchanged files recoverably remove, local modifications conflict, malformed state fails safely, and no plan mode writes.
 
 Release notes should identify safeguards worth porting and avoid instructions that overwrite project-specific commands, architecture, or accepted decisions. Update schema 1 only compatibly; a provenance or ownership semantic change requires a new schema and migration tests.
 

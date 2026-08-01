@@ -17,11 +17,8 @@ None of these requests authorizes deployment or unrelated cleanup.
 
 Run the narrowest feature checks plus:
 
-```bash
-./scripts/lint.sh
-./scripts/test.sh
-./scripts/security.sh
-```
+POSIX: `./scripts/lint.sh && ./scripts/test.sh && ./scripts/security.sh`
+Windows: `.\scripts\lint.ps1; .\scripts\test.ps1; .\scripts\security.ps1`
 
 If a check fails, diagnose and fix only in-scope problems, rerun it, and stop if safe completion needs a product decision or unrelated change. Run the canonical scripts directly so lint/test one-use hook receipts reflect the real result; do not mark verification manually.
 

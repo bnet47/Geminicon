@@ -14,7 +14,6 @@ from typing import Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 EXCLUDED_DIRS = {
-    ".codex-state",
     ".git",
     ".mypy_cache",
     ".next",
@@ -55,9 +54,12 @@ TOKEN_PATTERNS = (
     ("aws-access-key", re.compile(r"\b(?:AKIA|ASIA)[A-Z0-9]{16}\b")),
     ("github-token", re.compile(r"\bgh[pousr]_[A-Za-z0-9]{36,255}\b")),
     ("openai-api-key", re.compile(r"\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b")),
+    ("anthropic-api-key", re.compile(r"\bsk-ant-api[0-9a-zA-Z_-]{20,}\b")),
     ("google-api-key", re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b")),
     ("slack-token", re.compile(r"\bxox[baprs]-[0-9A-Za-z-]{10,}\b")),
     ("stripe-live-secret", re.compile(r"\b(?:sk|rk)_live_[0-9A-Za-z]{16,}\b")),
+    ("huggingface-token", re.compile(r"\bhf_[A-Za-z0-9]{34,}\b")),
+    ("supabase-token", re.compile(r"\bsbp_[a-f0-9]{40}\b")),
 )
 SECRET_ASSIGNMENT = re.compile(
     r"(?ix)\b(?:api[_-]?key|client[_-]?secret|password|passwd|secret|access[_-]?token|auth[_-]?token)"

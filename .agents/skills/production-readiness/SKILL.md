@@ -30,11 +30,8 @@ Do not demand controls that do not fit the system. Explain why an item is not ap
 
 Run the project-specific checks plus the canonical gates when available:
 
-```bash
-./scripts/security.sh
-./scripts/lint.sh
-./scripts/test.sh
-```
+POSIX: `./scripts/security.sh && ./scripts/lint.sh && ./scripts/test.sh`
+Windows: `.\scripts\security.ps1; .\scripts\lint.ps1; .\scripts\test.ps1`
 
 Use the supported native wrappers on Windows. Run ecosystem-native dependency or container audits when the project provides them. Do not install tools, mutate lockfiles, contact production, or perform load tests against shared systems without authority. Prefer restore, migration, rollback, authorization, and failure-path tests over policy claims.
 

@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Codexicon never updates consuming repositories automatically. Security fixes are applied to the latest template release. An adopted repository can inspect a trusted local release with `python scripts/codexicon.py update --source SOURCE` and explicitly apply baseline-unchanged harness files; conflicts and project-owned files still require deliberate review. Repositories without an adoption lock must review and port relevant fixes manually.
+Codexicon never updates consuming repositories automatically. Security fixes are applied to the latest template release. An adopted repository can inspect a trusted local release with the current verification scripts (e.g., `./scripts/security.ps1`) and explicitly apply baseline-unchanged harness files; conflicts and project-owned files still require deliberate review. Repositories without an adoption lock must review and port relevant fixes manually.
 
 ## Report a vulnerability
 

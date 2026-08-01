@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "docs" / "repo-template-playbook.source.html"
 SHELL = ROOT / "docs" / "repo-template-playbook.shell.html"
 OUTPUT = ROOT / "docs" / "repo-template-playbook.html"
-MARKER = "{{CODEX_PLAYBOOK_FRAGMENT}}"
+MARKER = "{{GEMINI_PLAYBOOK_FRAGMENT}}"
 
 
 def render() -> str:

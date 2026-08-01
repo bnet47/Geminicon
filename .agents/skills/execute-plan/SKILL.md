@@ -11,7 +11,7 @@ Announce: "I'm using execute-plan to implement the approved plan with bounded ta
 
 Read the selected plan and linked spec. Inspect `git status` and preserve existing user changes. Confirm task paths still exist and dependencies remain accurate; update the plan only when reality invalidates it, and explain material changes.
 
-If resuming, run `python scripts/codexicon.py resume`, then verify the selected checkpoint against the plan and current diff. `.codex-state/` is local verification state, not project memory.
+If resuming, read the latest markdown artifact in agent_docs/sessions/, then verify the selected checkpoint against the plan and current diff.
 
 ## 2. Choose execution shape
 
@@ -20,7 +20,7 @@ If resuming, run `python scripts/codexicon.py resume`, then verify the selected 
 - Execute tightly coupled tasks sequentially; keep integration work with the primary agent.
 - Do not delegate merely because a task reads many files or exceeds an arbitrary token estimate.
 
-Each subagent brief must include the exact task text, global constraints, allowed files, dependency state, verification command, and side-effect authorization. Do not rely on hidden parent context.
+Each subagent brief must include the exact task text, global constraints, allowed files, dependency state, verification command, and side-effect authorization. EXPLICITLY append the repository's security boundaries from AGENTS.md to the brief. Do not rely on hidden parent context.
 
 ## 3. Integrate each result
 
@@ -36,9 +36,10 @@ Statuses are `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, and `NEEDS_CONTEXT`. Repea
 
 After task-level checks, run the full plan verification plus:
 
-```bash
-./scripts/lint.sh
-./scripts/test.sh
+```powershell
+.\scripts\lint.ps1
+.\scripts\test.ps1
+.\scripts\security.ps1
 ```
 
 Then inspect the combined diff against the spec. Use `$review` for a separate read-only review when risk warrants it.

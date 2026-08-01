@@ -3,8 +3,7 @@
 ## Start here
 
 - New project setup: [START_HERE.md](START_HERE.md)
-- Codex configuration and hooks: [docs/codex.md](docs/codex.md)
-- Existing-repository adoption, diagnostics, and updates: [docs/codex.md](docs/codex.md#adoption-diagnostics-and-updates)
+- Gemini Antigravity configuration: [docs/gemini.md](docs/gemini.md)
 - Workflow and prompt examples: [live visual playbook](https://bnet47.github.io/codexicon/repo-template-playbook.html) or [offline HTML](docs/repo-template-playbook.html)
 - Current release notes: [TEMPLATE_VERSION](TEMPLATE_VERSION)
 

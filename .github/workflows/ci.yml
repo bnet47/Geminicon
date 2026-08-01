@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   validate:
-    name: Validate Codex template
+    name: Validate template
     timeout-minutes: 15
     strategy:
       fail-fast: false

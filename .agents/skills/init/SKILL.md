@@ -31,10 +31,10 @@ When the user has no preference, recommend the smallest stack that fits the char
 - Replace the template reporting guidance in `SECURITY.md` with the project's real private vulnerability route and accountable response owner before public or production use.
 - Complete the applicable boundaries and owners in `agent_docs/security.md` and `agent_docs/operations.md`; remove irrelevant template prompts rather than claiming they pass.
 - Create the actual stack skeleton and package metadata; remove template-only code that conflicts with it.
-- Replace `scripts/setup.sh`, `dev.sh`, `lint.sh`, and `test.sh` with real commands. Replace `deploy.sh` only when deployment is in scope.
+- Replace `scripts/setup.sh` (or `.ps1`), `dev.sh` (or `.ps1`), `lint.sh` (or `.ps1`), and `test.sh` (or `.ps1`) with real commands. Replace `deploy.sh` (or `.ps1`) only when deployment is in scope.
 - Preserve `scripts/security.sh` and `scripts/security.ps1` as equivalent gates. Add ecosystem dependency, image, or infrastructure audits when applicable; do not remove the built-in credential scan without an equal or stronger local replacement.
 - Support the developer platforms named in the charter. For native Windows projects, add equivalent `.ps1` wrappers or document platform-neutral commands; each path must run the same underlying checks.
-- Preserve the lint/test verification receipt contract: call `.codex/hooks/codex_hook.py emit-success lint|test` only after the underlying check succeeds. If the project removes that contract, update the hooks, tests, and `docs/codex.md` together.
+- Preserve the lint/test verification receipt contract: Ensure lint and test scripts exit with status 0 on success.
 - Replace the template validation workflow in `.github/workflows/ci.yml` with CI that installs the selected stack and runs the same canonical lint, test, and security scripts.
 - Create `.env.example` with names and comments only when environment variables are needed. Never create or read a real credential file.
 - Leave MCP absent unless the project needs external context. When needed, start from the commented project pattern, review the server and tool schemas, keep it disabled until the user trusts it, prefer read-only tools and scoped credentials, and record the trust boundary in `agent_docs/security.md`.
@@ -48,18 +48,14 @@ Commands must fail when unconfigured or when their underlying check fails. Never
 
 Run the configured commands, in order, through the platform path used by the project:
 
-```bash
-./scripts/setup.sh
-./scripts/lint.sh
-./scripts/test.sh
-./scripts/security.sh
-```
+POSIX: `./scripts/setup.sh && ./scripts/lint.sh && ./scripts/test.sh && ./scripts/security.sh`
+Windows: `.\scripts\setup.ps1; .\scripts\lint.ps1; .\scripts\test.ps1; .\scripts\security.ps1`
 
 Use the equivalent `.ps1` commands on native Windows when those are the configured platform path.
 
 Start the development command long enough to confirm it launches when practical, then stop it cleanly.
 
-After the project is trusted in Codex, use `/hooks` and the live smoke checklist in `docs/codex.md`. Report hook enforcement as unverified until that surface-specific check succeeds.
+After the project is trusted in Gemini Antigravity, use `/hooks` and the live smoke checklist in `docs/gemini.md`. Report hook enforcement as unverified until that surface-specific check succeeds.
 
 ## 5. Report
 

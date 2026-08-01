@@ -25,10 +25,8 @@ If not, route to `$brainstorm`, `$investigate`, `$spec`, or `$write-plan` as app
 3. Add or update focused tests for changed behavior when applicable.
 4. Run the narrowest relevant check. For code, configuration, generated artifacts, or shipping readiness, also run:
 
-```bash
-./scripts/lint.sh
-./scripts/test.sh
-```
+POSIX: `./scripts/lint.sh && ./scripts/test.sh`
+Windows: `.\scripts\lint.ps1; .\scripts\test.ps1`
 
 For documentation-only changes, run the applicable documentation or structural check and explicitly report why the broader test suite was not needed.
 

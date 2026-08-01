@@ -2,11 +2,11 @@
 
 This workspace starts unconfigured. Use Gemini Antigravity to define and initialize your project.
 
-## 1. Verify Baseline
+## 1. Verify Baseline and Enforce Security
 
-Before starting, ensure the harness works:
-POSIX: `./scripts/lint.sh && ./scripts/test.sh && ./scripts/security.sh`
-Windows: `.\scripts\lint.ps1; .\scripts\test.ps1; .\scripts\security.ps1`
+Before starting, install the security git hooks and ensure the harness works:
+POSIX: `./scripts/install-git-hooks.sh && ./scripts/lint.sh && ./scripts/test.sh && ./scripts/security.sh`
+Windows: `.\scripts\install-git-hooks.ps1; .\scripts\lint.ps1; .\scripts\test.ps1; .\scripts\security.ps1`
 
 ## 2. Define the Project
 

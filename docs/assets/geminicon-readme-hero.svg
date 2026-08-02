@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="50%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="accent-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="15" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Card -->
+  <rect width="1200" height="360" rx="20" fill="url(#bg-grad)" stroke="#334155" stroke-width="2"/>
+  
+  <!-- Subtle Glow Elements -->
+  <circle cx="200" cy="80" r="120" fill="#38bdf8" opacity="0.15" filter="url(#glow)"/>
+  <circle cx="1000" cy="280" r="140" fill="#c084fc" opacity="0.15" filter="url(#glow)"/>
+
+  <!-- Shield Logo Symbol -->
+  <g transform="translate(80, 100)">
+    <path d="M 40 10 L 80 30 V 80 C 80 120 40 150 40 150 C 40 150 0 120 0 80 V 30 Z" fill="url(#accent-grad)" opacity="0.9"/>
+    <path d="M 40 25 L 68 40 V 78 C 68 108 40 130 40 130 C 40 130 12 108 12 78 V 40 Z" fill="#0f172a"/>
+    <!-- Gemini Sparkle Inside Shield -->
+    <path d="M 40 45 Q 40 65 60 65 Q 40 65 40 85 Q 40 65 20 65 Q 40 65 40 45 Z" fill="url(#accent-grad)"/>
+  </g>
+
+  <!-- Main Title -->
+  <text x="210" y="145" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="54" font-weight="800" fill="#ffffff" letter-spacing="-1">Geminicon 🛡️</text>
+
+  <!-- Tagline -->
+  <text x="210" y="190" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="500" fill="#94a3b8">The #1 Gemini Antigravity Agent Harness for Production Software</text>
+
+  <!-- Pill Badges -->
+  <g transform="translate(210, 225)">
+    <!-- Badge 1: Antigravity Native -->
+    <rect width="180" height="36" rx="18" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="90" y="23" font-family="sans-serif" font-size="14" font-weight="600" fill="#38bdf8" text-anchor="middle">Gemini-Native</text>
+
+    <!-- Badge 2: Token Efficient -->
+    <rect x="195" width="180" height="36" rx="18" fill="#1e293b" stroke="#818cf8" stroke-width="1.5"/>
+    <text x="285" y="23" font-family="sans-serif" font-size="14" font-weight="600" fill="#818cf8" text-anchor="middle">Token Efficient</text>
+
+    <!-- Badge 3: Verifiable Delivery -->
+    <rect x="390" width="190" height="36" rx="18" fill="#1e293b" stroke="#4ade80" stroke-width="1.5"/>
+    <text x="485" y="23" font-family="sans-serif" font-size="14" font-weight="600" fill="#4ade80" text-anchor="middle">Verifiable Delivery</text>
+  </g>
+</svg>

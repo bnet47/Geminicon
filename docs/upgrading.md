@@ -1,0 +1,47 @@
+# Upgrading a project from a newer Geminicon release
+
+Geminicon projects are independent repositories. Adopt template improvements deliberately instead of replacing the project with a fresh template copy.
+
+## Compare the project and template
+
+1. Read the newer `TEMPLATE_VERSION` release notes and select changes relevant to the project.
+2. Compare the newer template against the project without including generated output, local state, or credential-bearing files.
+3. Group differences into scaffolding, project-owned content, and obsolete template material.
+4. Apply one coherent safeguard or workflow change at a time, then run the project’s real verification.
+
+Use the project’s current behavior and accepted decisions as the source of truth when template defaults conflict with deliberate local changes.
+
+## Usually safe to adopt with review
+
+- new validation and credential-scanning logic;
+- hook bug fixes that preserve the project’s verification receipt contract;
+- new opt-in documentation or disabled configuration examples;
+- CI hardening that preserves the project’s supported platforms and canonical checks;
+- new skills or references that do not replace locally modified workflows.
+
+Review each change for local path, runtime, policy, and platform assumptions before applying it.
+
+## Merge instead of overwriting
+
+- `AGENTS.md`, especially project identity, commands, boundaries, and routing;
+- `README.md` and public project identity;
+- real setup, development, lint, test, security, and deployment scripts;
+- stack-specific CI and release configuration;
+- `.gemini/config.toml`, hooks, and custom agents when the project has local policy;
+- `.agents/skills/` when workflows were customized;
+- `agent_docs/`, including architecture, data, conventions, security, operations, decisions, briefs, and plans;
+- `SECURITY.md`, particularly the real private reporting route and accountable owner;
+- environment placeholders, ignore rules, and dependency manifests.
+
+Never replace a project-specific command with a template stub or restore a deleted template placeholder over established project facts.
+
+## Adoption checklist
+
+- Selected release changes are mapped to a real project need or safeguard.
+- Project identity, commands, supported platforms, and accepted decisions are preserved.
+- Credential paths and local state remain untracked and unopened.
+- External integrations remain absent, commented, or disabled until explicitly reviewed and trusted.
+- Hook changes preserve or deliberately migrate verification behavior.
+- The project’s canonical lint, tests, and security checks pass.
+- Any live hook or integration change is reviewed in the Gemini Antigravity surface where it will run.
+- The project records which template release was reviewed and which changes were declined.

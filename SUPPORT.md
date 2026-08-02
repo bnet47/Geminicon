@@ -1,0 +1,28 @@
+# Support
+
+## Start here
+
+- New project setup: [START_HERE.md](START_HERE.md)
+- Gemini Antigravity configuration: [docs/gemini.md](docs/gemini.md)
+- Workflow and prompt examples: [live visual playbook](https://bnet47.github.io/geminicon/repo-template-playbook.html) or [offline HTML](docs/repo-template-playbook.html)
+- Current release notes: [TEMPLATE_VERSION](TEMPLATE_VERSION)
+
+## Ask for help
+
+Use GitHub Issues for reproducible template problems, documentation gaps, portability failures, or focused enhancement proposals. Include:
+
+- the Geminicon version;
+- operating system and Python version;
+- the exact command or workflow used;
+- expected and actual behavior;
+- the smallest redacted error excerpt;
+- whether the problem reproduces in a fresh template copy.
+
+Do not post credentials, environment dumps, private repository content, customer data, or full logs containing sensitive information.
+
+Geminicon is maintained on a best-effort basis. The maintainer cannot provide private application development, production operations, or emergency response for projects created from the template.
+
+## Security
+
+Do not use a public support issue for a suspected vulnerability. Follow [SECURITY.md](SECURITY.md).
+

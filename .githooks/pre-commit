@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+set -eu
+
+root="$(git rev-parse --show-toplevel)"
+cd "$root"
+
+if command -v bash >/dev/null 2>&1; then
+  bash ./scripts/security.sh
+elif command -v python3 >/dev/null 2>&1; then
+  python3 scripts/security_scan.py
+elif command -v python >/dev/null 2>&1; then
+  python scripts/security_scan.py
+else
+  sh ./scripts/security.sh
+fi
+
+

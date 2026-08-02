@@ -1,0 +1,33 @@
+[project]
+name = "geminicon"
+description = "Production-ready Gemini Antigravity agent harness template for software repositories."
+version = "0.1.0"
+
+[workspace]
+default_mode = "agentic"
+
+[formatting]
+line_length = 100
+
+[linting]
+enabled = true
+
+[subagents]
+default_model = "inherit"
+allow_background_execution = true
+
+[context]
+max_context_tokens = 2000000
+lazy_load_docs = true
+
+[ignore]
+paths = [
+    "node_modules/",
+    "dist/",
+    "build/",
+    ".next/",
+    ".nuxt/",
+    ".gemini/scratch/",
+    "package-lock.json"
+]
+

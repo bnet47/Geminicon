@@ -1,6 +1,6 @@
-# Upgrading a project from a newer Codexicon release
+# Upgrading a project from a newer Geminicon release
 
-Codexicon projects are independent repositories. Adopt template improvements deliberately instead of replacing the project with a fresh template copy.
+Geminicon projects are independent repositories. Adopt template improvements deliberately instead of replacing the project with a fresh template copy.
 
 ## Compare the project and template
 

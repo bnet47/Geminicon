@@ -1,4 +1,4 @@
-# Maintaining Codexicon
+# Maintaining Geminicon
 
 This guide covers the public template itself, not projects created from it.
 
@@ -41,7 +41,7 @@ Keep the `SKILL.md` body procedural and concise. Put detailed variant guidance i
 
 ## Supporting generated projects
 
-Projects created from Codexicon have independent histories and do not receive automatic updates. Keep `.gemini/config.toml` limited to real harness integration points and assign project-owned commands/guidance conservatively. Test adoption and update from the prior release: unchanged managed files update, retired unchanged files recoverably remove, local modifications conflict, malformed state fails safely, and no plan mode writes.
+Projects created from Geminicon have independent histories and do not receive automatic updates. Keep `.gemini/config.toml` limited to real harness integration points and assign project-owned commands/guidance conservatively. Test adoption and update from the prior release: unchanged managed files update, retired unchanged files recoverably remove, local modifications conflict, malformed state fails safely, and no plan mode writes.
 
 Release notes should identify safeguards worth porting and avoid instructions that overwrite project-specific commands, architecture, or accepted decisions. Update schema 1 only compatibly; a provenance or ownership semantic change requires a new schema and migration tests.
 

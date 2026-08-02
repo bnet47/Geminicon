@@ -2,7 +2,7 @@
 
 ## Our standard
 
-Codexicon is intended to be a practical, respectful place to improve public development tooling. Participants must:
+Geminicon is intended to be a practical, respectful place to improve public development tooling. Participants must:
 
 - discuss ideas and evidence without attacking people;
 - give specific, actionable feedback;
@@ -13,7 +13,7 @@ Codexicon is intended to be a practical, respectful place to improve public deve
 
 ## Scope
 
-This standard applies in repository issues, discussions, pull requests, reviews, security reports, and other spaces where someone is representing Codexicon.
+This standard applies in repository issues, discussions, pull requests, reviews, security reports, and other spaces where someone is representing Geminicon.
 
 ## Enforcement
 

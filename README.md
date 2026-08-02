@@ -1,6 +1,6 @@
-# Gemini Agent Harness
+# Geminicon — Gemini Agent Harness Template
 
-**A production-minded Gemini Antigravity agent harness for new and established repositories.**
+**A production-minded Gemini Antigravity agent harness for software repositories.**
 
 This template optimizes your repository for Gemini Antigravity, focusing on token efficiency, precise routing, and strict verification guardrails.
 

@@ -1,5 +1,5 @@
 [project]
-name = "gemini-antigravity-harness"
+name = "geminicon"
 description = "Production-ready Gemini Antigravity agent harness template for software repositories."
 version = "0.1.0"
 

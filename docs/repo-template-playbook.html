@@ -936,11 +936,11 @@ html&gt;body{padding:0}&lt;/style&gt;
     &lt;div class=&quot;stage-content&quot;&gt;
       &lt;div&gt;
         &lt;strong&gt;New repository&lt;/strong&gt;
-        &lt;p&gt;Use the GitHub template or a clean local copy, verify the baseline, then run &lt;code&gt;$discover&lt;/code&gt; and &lt;code&gt;$init&lt;/code&gt;.&lt;/p&gt;
+        &lt;p&gt;Use the GitHub template or a clean local copy, verify the baseline, then run &lt;code&gt;/discover&lt;/code&gt; and &lt;code&gt;/init&lt;/code&gt;.&lt;/p&gt;
       &lt;/div&gt;
       &lt;div&gt;
         &lt;strong&gt;Established repository&lt;/strong&gt;
-        &lt;p&gt;Keep the Geminicon source separate and run &lt;code&gt;$adopt-geminicon&lt;/code&gt; or &lt;code&gt;python scripts/geminicon.py inspect TARGET&lt;/code&gt; before authorising any writes. Use &lt;code&gt;docs/upgrading.md&lt;/code&gt; for the manual migration boundaries.&lt;/p&gt;
+        &lt;p&gt;Keep the Geminicon source separate and run &lt;code&gt;/adopt-geminicon&lt;/code&gt; or &lt;code&gt;python scripts/geminicon.py inspect TARGET&lt;/code&gt; before authorising any writes. Use &lt;code&gt;docs/upgrading.md&lt;/code&gt; for the manual migration boundaries.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/div&gt;
     &lt;p class=&quot;text-small text-muted&quot;&gt;&lt;code&gt;inspect&lt;/code&gt;, &lt;code&gt;doctor&lt;/code&gt;, update planning, and &lt;code&gt;resume&lt;/code&gt; are read-only. Adoption and update mutations require &lt;code&gt;--apply&lt;/code&gt;; local conflicts and project-owned files are preserved for deliberate integration.&lt;/p&gt;
@@ -971,7 +971,7 @@ html&gt;body{padding:0}&lt;/style&gt;
         &lt;/div&gt;
         &lt;div&gt;
           &lt;span class=&quot;text-small text-muted&quot;&gt;Invoke&lt;/span&gt;
-          &lt;p&gt;&lt;code id=&quot;stage-command&quot;&gt;$discover&lt;/code&gt;&lt;/p&gt;
+          &lt;p&gt;&lt;code id=&quot;stage-command&quot;&gt;/discover&lt;/code&gt;&lt;/p&gt;
         &lt;/div&gt;
         &lt;div&gt;
           &lt;span class=&quot;text-small text-muted&quot;&gt;Recommended tier and effort&lt;/span&gt;
@@ -992,7 +992,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       &lt;/div&gt;
       &lt;div&gt;
         &lt;span class=&quot;text-small text-muted&quot;&gt;Sports app prompt&lt;/span&gt;
-        &lt;p&gt;&lt;code id=&quot;stage-example&quot;&gt;$discover We want a mobile-first sports app for community football fans to follow fixtures, live scores, standings, and match alerts. Success means a fan can find today&#x27;s match and understand its current state in under 10 seconds. Constraints: accessible web app, no betting features, no provider selected.&lt;/code&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;code id=&quot;stage-example&quot;&gt;/discover We want a mobile-first sports app for community football fans to follow fixtures, live scores, standings, and match alerts. Success means a fan can find today&#x27;s match and understand its current state in under 10 seconds. Constraints: accessible web app, no betting features, no provider selected.&lt;/code&gt;&lt;/p&gt;
       &lt;/div&gt;
     &lt;/div&gt;
 
@@ -1010,7 +1010,7 @@ html&gt;body{padding:0}&lt;/style&gt;
           &lt;p&gt;Dense updates, targeted context, bounded logs, progressively loaded skills, and restrained delegation.&lt;/p&gt;
         &lt;/div&gt;
         &lt;div&gt;
-          &lt;span class=&quot;text-small text-muted&quot;&gt;Use &lt;code&gt;$concise&lt;/code&gt;&lt;/span&gt;
+          &lt;span class=&quot;text-small text-muted&quot;&gt;Use &lt;code&gt;/concise&lt;/code&gt;&lt;/span&gt;
           &lt;p&gt;Request terse communication at any stage. Reasoning, exact code and errors, implementation, tests, review, and safety remain unchanged.&lt;/p&gt;
         &lt;/div&gt;
         &lt;div&gt;
@@ -1022,7 +1022,7 @@ html&gt;body{padding:0}&lt;/style&gt;
           &lt;p&gt;Reasoning effort, tool evidence, test depth, security detail, review quality, or useful development context.&lt;/p&gt;
         &lt;/div&gt;
       &lt;/div&gt;
-      &lt;p class=&quot;text-small text-muted&quot;&gt;Communication compression and model reasoning are separate controls. The repository-native &lt;code&gt;$concise&lt;/code&gt; skill changes output style only and loads when relevant.&lt;/p&gt;
+      &lt;p class=&quot;text-small text-muted&quot;&gt;Communication compression and model reasoning are separate controls. The repository-native &lt;code&gt;/concise&lt;/code&gt; skill changes output style only and loads when relevant.&lt;/p&gt;
     &lt;/div&gt;
   &lt;/section&gt;
 
@@ -1049,42 +1049,42 @@ html&gt;body{padding:0}&lt;/style&gt;
       &lt;/div&gt;
       &lt;div class=&quot;route-row&quot; role=&quot;row&quot;&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Signal · &lt;/span&gt;Established repository needs Geminicon&lt;/span&gt;
-        &lt;code role=&quot;cell&quot;&gt;$adopt-geminicon&lt;/code&gt;
+        &lt;code role=&quot;cell&quot;&gt;/adopt-geminicon&lt;/code&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Result · &lt;/span&gt;Read-only compatibility plan before any explicitly authorised integration&lt;/span&gt;
       &lt;/div&gt;
       &lt;div class=&quot;route-row&quot; role=&quot;row&quot;&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Signal · &lt;/span&gt;Clear, small change&lt;/span&gt;
-        &lt;code role=&quot;cell&quot;&gt;$quick&lt;/code&gt;
+        &lt;code role=&quot;cell&quot;&gt;/quick&lt;/code&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Result · &lt;/span&gt;Small complete implementation with focused verification&lt;/span&gt;
       &lt;/div&gt;
       &lt;div class=&quot;route-row&quot; role=&quot;row&quot;&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Signal · &lt;/span&gt;Feature behaviour is genuinely unclear&lt;/span&gt;
-        &lt;code role=&quot;cell&quot;&gt;$brainstorm&lt;/code&gt;
+        &lt;code role=&quot;cell&quot;&gt;/brainstorm&lt;/code&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Result · &lt;/span&gt;Approved behaviour before implementation&lt;/span&gt;
       &lt;/div&gt;
       &lt;div class=&quot;route-row&quot; role=&quot;row&quot;&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Signal · &lt;/span&gt;Precise durable requirement&lt;/span&gt;
-        &lt;code role=&quot;cell&quot;&gt;$spec → $write-plan&lt;/code&gt;
+        &lt;code role=&quot;cell&quot;&gt;/spec → /write-plan&lt;/code&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Result · &lt;/span&gt;Executable contract; plan only when dependencies justify it&lt;/span&gt;
       &lt;/div&gt;
       &lt;div class=&quot;route-row&quot; role=&quot;row&quot;&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Signal · &lt;/span&gt;Approved independent work packages&lt;/span&gt;
-        &lt;code role=&quot;cell&quot;&gt;$execute-plan&lt;/code&gt;
+        &lt;code role=&quot;cell&quot;&gt;/execute-plan&lt;/code&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Result · &lt;/span&gt;Bounded execution with integrated verification&lt;/span&gt;
       &lt;/div&gt;
       &lt;div class=&quot;route-row&quot; role=&quot;row&quot;&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Signal · &lt;/span&gt;Unknown cause or costly technical choice&lt;/span&gt;
-        &lt;code role=&quot;cell&quot;&gt;$investigate / $architecture-review&lt;/code&gt;
+        &lt;code role=&quot;cell&quot;&gt;/investigate / /architecture-review&lt;/code&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Result · &lt;/span&gt;Root cause or explicit reversible decision&lt;/span&gt;
       &lt;/div&gt;
       &lt;div class=&quot;route-row&quot; role=&quot;row&quot;&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Signal · &lt;/span&gt;Customer-facing design or marketing&lt;/span&gt;
-        &lt;code role=&quot;cell&quot;&gt;$design-experience / $create-marketing&lt;/code&gt;
-        &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Result · &lt;/span&gt;Rendered, evidence-backed work followed by &lt;code&gt;$review-creative&lt;/code&gt;&lt;/span&gt;
+        &lt;code role=&quot;cell&quot;&gt;/design-experience / /create-marketing&lt;/code&gt;
+        &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Result · &lt;/span&gt;Rendered, evidence-backed work followed by &lt;code&gt;/review-creative&lt;/code&gt;&lt;/span&gt;
       &lt;/div&gt;
       &lt;div class=&quot;route-row&quot; role=&quot;row&quot;&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Signal · &lt;/span&gt;First launch or major production change&lt;/span&gt;
-        &lt;code role=&quot;cell&quot;&gt;$production-readiness&lt;/code&gt;
+        &lt;code role=&quot;cell&quot;&gt;/production-readiness&lt;/code&gt;
         &lt;span role=&quot;cell&quot;&gt;&lt;span class=&quot;route-label&quot;&gt;Result · &lt;/span&gt;Evidence-backed READY, ACCEPTED RISK, or NOT READY decision before shipping&lt;/span&gt;
       &lt;/div&gt;
     &lt;/div&gt;
@@ -1098,43 +1098,43 @@ html&gt;body{padding:0}&lt;/style&gt;
     &lt;label class=&quot;form-label&quot; for=&quot;skill-select&quot;&gt;Skill&lt;/label&gt;
     &lt;select id=&quot;skill-select&quot; class=&quot;form-select&quot;&gt;
       &lt;optgroup label=&quot;Project start&quot;&gt;
-        &lt;option value=&quot;discover&quot;&gt;$discover&lt;/option&gt;
-        &lt;option value=&quot;init&quot;&gt;$init&lt;/option&gt;
-        &lt;option value=&quot;adopt-geminicon&quot;&gt;$adopt-geminicon&lt;/option&gt;
+        &lt;option value=&quot;discover&quot;&gt;/discover&lt;/option&gt;
+        &lt;option value=&quot;init&quot;&gt;/init&lt;/option&gt;
+        &lt;option value=&quot;adopt-geminicon&quot;&gt;/adopt-geminicon&lt;/option&gt;
       &lt;/optgroup&gt;
       &lt;optgroup label=&quot;Define and plan&quot;&gt;
-        &lt;option value=&quot;brainstorm&quot;&gt;$brainstorm&lt;/option&gt;
-        &lt;option value=&quot;spec&quot;&gt;$spec&lt;/option&gt;
-        &lt;option value=&quot;write-plan&quot;&gt;$write-plan&lt;/option&gt;
+        &lt;option value=&quot;brainstorm&quot;&gt;/brainstorm&lt;/option&gt;
+        &lt;option value=&quot;spec&quot;&gt;/spec&lt;/option&gt;
+        &lt;option value=&quot;write-plan&quot;&gt;/write-plan&lt;/option&gt;
       &lt;/optgroup&gt;
       &lt;optgroup label=&quot;Implement&quot;&gt;
-        &lt;option value=&quot;quick&quot;&gt;$quick&lt;/option&gt;
-        &lt;option value=&quot;execute-plan&quot;&gt;$execute-plan&lt;/option&gt;
+        &lt;option value=&quot;quick&quot;&gt;/quick&lt;/option&gt;
+        &lt;option value=&quot;execute-plan&quot;&gt;/execute-plan&lt;/option&gt;
       &lt;/optgroup&gt;
       &lt;optgroup label=&quot;Customer experience&quot;&gt;
-        &lt;option value=&quot;design-experience&quot;&gt;$design-experience&lt;/option&gt;
-        &lt;option value=&quot;create-marketing&quot;&gt;$create-marketing&lt;/option&gt;
-        &lt;option value=&quot;review-creative&quot;&gt;$review-creative&lt;/option&gt;
+        &lt;option value=&quot;design-experience&quot;&gt;/design-experience&lt;/option&gt;
+        &lt;option value=&quot;create-marketing&quot;&gt;/create-marketing&lt;/option&gt;
+        &lt;option value=&quot;review-creative&quot;&gt;/review-creative&lt;/option&gt;
       &lt;/optgroup&gt;
       &lt;optgroup label=&quot;Diagnose and decide&quot;&gt;
-        &lt;option value=&quot;investigate&quot;&gt;$investigate&lt;/option&gt;
-        &lt;option value=&quot;architecture-review&quot;&gt;$architecture-review&lt;/option&gt;
-        &lt;option value=&quot;retro&quot;&gt;$retro&lt;/option&gt;
+        &lt;option value=&quot;investigate&quot;&gt;/investigate&lt;/option&gt;
+        &lt;option value=&quot;architecture-review&quot;&gt;/architecture-review&lt;/option&gt;
+        &lt;option value=&quot;retro&quot;&gt;/retro&lt;/option&gt;
       &lt;/optgroup&gt;
       &lt;optgroup label=&quot;Review and ship&quot;&gt;
-        &lt;option value=&quot;review&quot;&gt;$review&lt;/option&gt;
-        &lt;option value=&quot;production-readiness&quot;&gt;$production-readiness&lt;/option&gt;
-        &lt;option value=&quot;ship&quot;&gt;$ship&lt;/option&gt;
-        &lt;option value=&quot;conventional-commit&quot;&gt;$conventional-commit&lt;/option&gt;
+        &lt;option value=&quot;review&quot;&gt;/review&lt;/option&gt;
+        &lt;option value=&quot;production-readiness&quot;&gt;/production-readiness&lt;/option&gt;
+        &lt;option value=&quot;ship&quot;&gt;/ship&lt;/option&gt;
+        &lt;option value=&quot;conventional-commit&quot;&gt;/conventional-commit&lt;/option&gt;
       &lt;/optgroup&gt;
       &lt;optgroup label=&quot;Communication and continuity&quot;&gt;
-        &lt;option value=&quot;concise&quot;&gt;$concise&lt;/option&gt;
-        &lt;option value=&quot;context-dump&quot;&gt;$context-dump&lt;/option&gt;
+        &lt;option value=&quot;concise&quot;&gt;/concise&lt;/option&gt;
+        &lt;option value=&quot;context-dump&quot;&gt;/context-dump&lt;/option&gt;
       &lt;/optgroup&gt;
     &lt;/select&gt;
 
     &lt;div class=&quot;card&quot; aria-live=&quot;polite&quot; aria-atomic=&quot;true&quot;&gt;
-      &lt;h3&gt;&lt;code id=&quot;skill-title&quot;&gt;$discover&lt;/code&gt;&lt;/h3&gt;
+      &lt;h3&gt;&lt;code id=&quot;skill-title&quot;&gt;/discover&lt;/code&gt;&lt;/h3&gt;
       &lt;div class=&quot;stage-content&quot;&gt;
         &lt;div&gt;
           &lt;span class=&quot;text-small text-muted&quot;&gt;Use when&lt;/span&gt;
@@ -1146,11 +1146,11 @@ html&gt;body{padding:0}&lt;/style&gt;
         &lt;/div&gt;
         &lt;div&gt;
           &lt;span class=&quot;text-small text-muted&quot;&gt;Usually followed by&lt;/span&gt;
-          &lt;p&gt;&lt;code id=&quot;skill-next&quot;&gt;$init&lt;/code&gt;&lt;/p&gt;
+          &lt;p&gt;&lt;code id=&quot;skill-next&quot;&gt;/init&lt;/code&gt;&lt;/p&gt;
         &lt;/div&gt;
         &lt;div&gt;
           &lt;span class=&quot;text-small text-muted&quot;&gt;Sports app prompt&lt;/span&gt;
-          &lt;p&gt;&lt;code id=&quot;skill-prompt&quot;&gt;$discover Define Matchday, a community football app for fixtures, live scores, standings, and match alerts. Clarify the users, observable success, data constraints, accessibility needs, and non-goals before choosing a stack.&lt;/code&gt;&lt;/p&gt;
+          &lt;p&gt;&lt;code id=&quot;skill-prompt&quot;&gt;/discover Define Matchday, a community football app for fixtures, live scores, standings, and match alerts. Clarify the users, observable success, data constraints, accessibility needs, and non-goals before choosing a stack.&lt;/code&gt;&lt;/p&gt;
         &lt;/div&gt;
       &lt;/div&gt;
     &lt;/div&gt;
@@ -1209,205 +1209,205 @@ html&gt;body{padding:0}&lt;/style&gt;
         discover: {
           title: &#x27;Discover the project&#x27;,
           purpose: &#x27;Define the problem, user, observable outcome, constraints, and non-goals before choosing technology.&#x27;,
-          command: &#x27;$discover&#x27;,
+          command: &#x27;/discover&#x27;,
           model: &#x27;High-reasoning tier · standard effort&#x27;,
           modelNote: &#x27;Raise reasoning effort for regulated or unusually ambiguous products, especially when a wrong charter would create major safety, compliance, or investment risk.&#x27;,
           evidence: &#x27;An approved charter under agent_docs/briefs/.&#x27;,
           avoid: &#x27;Selecting a framework or database before the problem and constraints require one.&#x27;,
-          example: &#x27;$discover We want a mobile-first sports app for community football fans to follow fixtures, live scores, standings, and match alerts. Success means a fan can find today\&#x27;s match and understand its current state in under 10 seconds. Constraints: accessible web app, no betting features, no provider selected.&#x27;
+          example: &#x27;/discover We want a mobile-first sports app for community football fans to follow fixtures, live scores, standings, and match alerts. Success means a fan can find today\&#x27;s match and understand its current state in under 10 seconds. Constraints: accessible web app, no betting features, no provider selected.&#x27;
         },
         init: {
           title: &#x27;Initialise the real environment&#x27;,
           purpose: &#x27;Choose the smallest suitable stack and replace every template stub with real setup, development, lint, test, security, Git-gate, and CI commands.&#x27;,
-          command: &#x27;$init&#x27;,
+          command: &#x27;/init&#x27;,
           model: &#x27;High-reasoning tier · standard effort&#x27;,
           modelNote: &#x27;Raise reasoning effort for unfamiliar stacks, complex infrastructure, security, compliance, migration, or production-critical setup.&#x27;,
           evidence: &#x27;Project identity, security and operations boundaries are filled; real commands, Git gates, CI, and supported platforms are verified.&#x27;,
           avoid: &#x27;Adding providers, dependencies, databases, or deployment services before the charter requires them.&#x27;,
-          example: &#x27;$init Configure Matchday from the approved charter. Recommend the smallest stack for a responsive web app with live-score updates, create real setup/lint/test commands and CI, and do not initialise Git or add hosting unless requested.&#x27;
+          example: &#x27;/init Configure Matchday from the approved charter. Recommend the smallest stack for a responsive web app with live-score updates, create real setup/lint/test commands and CI, and do not initialise Git or add hosting unless requested.&#x27;
         },
         build: {
           title: &#x27;Build the first useful slice&#x27;,
           purpose: &#x27;Deliver the smallest complete behaviour that proves value, using the least ceremonial workflow that fits.&#x27;,
-          command: &#x27;$quick · $brainstorm · $spec · $execute-plan&#x27;,
+          command: &#x27;/quick · /brainstorm · /spec · /execute-plan&#x27;,
           model: &#x27;Default coding tier · lighter effort&#x27;,
           modelNote: &#x27;Raise reasoning effort for architecture, long-context work, security, data integrity, or expensive failure modes.&#x27;,
           evidence: &#x27;Observable behaviour, focused tests, canonical lint and tests, and a concise report of residual gaps.&#x27;,
           avoid: &#x27;Large scaffolds, speculative abstractions, unrelated cleanup, or plans for a clear one-file change.&#x27;,
-          example: &#x27;$quick Add the Matchday fixture list using the existing API client. Done when upcoming matches show competition, teams, kickoff in the user\&#x27;s timezone, loading, empty, and error states, with focused tests and full repository checks.&#x27;
+          example: &#x27;/quick Add the Matchday fixture list using the existing API client. Done when upcoming matches show competition, teams, kickoff in the user\&#x27;s timezone, loading, empty, and error states, with focused tests and full repository checks.&#x27;
         },
         creative: {
           title: &#x27;Strengthen the customer experience&#x27;,
           purpose: &#x27;Shape interfaces or marketing from real users, brand context, product truth, reachable states, and approved evidence.&#x27;,
-          command: &#x27;$design-experience · $create-marketing&#x27;,
+          command: &#x27;/design-experience · /create-marketing&#x27;,
           model: &#x27;High-reasoning tier · standard effort&#x27;,
           modelNote: &#x27;Raise reasoning effort for a new visual system, complex interaction, important campaign, or work where trust, accessibility, or brand damage would be costly.&#x27;,
           evidence: &#x27;Rendered output, complete states, accessible behaviour, sourced claims, channel fit, and explicit unknowns.&#x27;,
           avoid: &#x27;Generic visual systems, fake metrics or proof, decorative dashboards, unsupported claims, and unverified polish.&#x27;,
-          example: &#x27;$design-experience Design Matchday\&#x27;s live match centre for fans checking a phone in a noisy stadium. Preserve the current identity, shape the score, clock, incidents, lineups, loading, stale, offline, and final states, then verify rendered mobile and desktop output.&#x27;
+          example: &#x27;/design-experience Design Matchday\&#x27;s live match centre for fans checking a phone in a noisy stadium. Preserve the current identity, shape the score, clock, incidents, lineups, loading, stale, offline, and final states, then verify rendered mobile and desktop output.&#x27;
         },
         assure: {
           title: &#x27;Assure correctness and quality&#x27;,
           purpose: &#x27;Review the work against its request, engineering contract, customer task, brand, accessibility, truth, and release risk.&#x27;,
-          command: &#x27;$review · $review-creative&#x27;,
+          command: &#x27;/review · /review-creative&#x27;,
           model: &#x27;High-reasoning tier · deeper effort&#x27;,
           modelNote: &#x27;Raise reasoning effort for security, privacy, payments, migrations, destructive operations, or release-blocking reviews. Do not use a weaker reviewer than the builder.&#x27;,
           evidence: &#x27;No unresolved release blockers; verification gaps are visible; lint and the full test suite pass when applicable.&#x27;,
           avoid: &#x27;Reviewing only source when rendered behaviour matters, cosmetic scoring, or manufacturing findings.&#x27;,
-          example: &#x27;$review-creative Audit Matchday\&#x27;s rendered live match centre for comprehension, responsive behaviour, keyboard access, contrast, stale-score trust, generic sports-app patterns, and fabricated data. Report findings only; do not edit.&#x27;
+          example: &#x27;/review-creative Audit Matchday\&#x27;s rendered live match centre for comprehension, responsive behaviour, keyboard access, contrast, stale-score trust, generic sports-app patterns, and fabricated data. Report findings only; do not edit.&#x27;
         },
         ship: {
           title: &#x27;Prove readiness, then ship only what was authorised&#x27;,
           purpose: &#x27;Run the production gate when applicable, then perform only the explicitly requested Git action. Deployment and external writes remain separate decisions.&#x27;,
-          command: &#x27;$production-readiness (launch) · $ship&#x27;,
+          command: &#x27;/production-readiness (launch) · /ship&#x27;,
           model: &#x27;Default coding tier for Git · high-reasoning tier for production&#x27;,
           modelNote: &#x27;Raise reasoning effort for a large final diff, the production gate, security, privacy, payments, migrations, destructive operations, or hard-to-reverse releases.&#x27;,
           evidence: &#x27;Security, lint, and tests pass; launch evidence is READY or explicitly accepted; only the requested Git action is completed.&#x27;,
           avoid: &#x27;Inferring publication, pushing to main, deploying, or sending external messages from a vague request to finish.&#x27;,
-          example: &#x27;$ship Verify the Matchday fixture and live-score work, create a local commit with an appropriate message, and stop. Do not push, open a pull request, deploy, or message anyone.&#x27;
+          example: &#x27;/ship Verify the Matchday fixture and live-score work, create a local commit with an appropriate message, and stop. Do not push, open a pull request, deploy, or message anyone.&#x27;
         }
       };
 
       const skillDetails = {
         discover: {
-          title: &#x27;$discover&#x27;,
+          title: &#x27;/discover&#x27;,
           when: &#x27;The copied template has no approved product definition and technical choices should wait.&#x27;,
           produces: &#x27;An approved charter covering the problem, user, outcome, constraints, evidence, and non-goals.&#x27;,
-          next: &#x27;$init&#x27;,
-          prompt: &#x27;$discover Define Matchday, a community football app for fixtures, live scores, standings, and match alerts. Clarify the users, observable success, data constraints, accessibility needs, and non-goals before choosing a stack.&#x27;
+          next: &#x27;/init&#x27;,
+          prompt: &#x27;/discover Define Matchday, a community football app for fixtures, live scores, standings, and match alerts. Clarify the users, observable success, data constraints, accessibility needs, and non-goals before choosing a stack.&#x27;
         },
         init: {
-          title: &#x27;$init&#x27;,
+          title: &#x27;/init&#x27;,
           when: &#x27;A charter is approved and the unconfigured template must become a working project.&#x27;,
           produces: &#x27;The smallest suitable stack, project identity, real source/test structure, commands, CI, and verified local setup.&#x27;,
-          next: &#x27;$quick or the workflow that fits the first slice&#x27;,
-          prompt: &#x27;$init Configure Matchday from the approved charter. Recommend the smallest stack for a responsive web app with live-score updates, create real setup/lint/test commands and CI, and do not initialise Git or add hosting unless requested.&#x27;
+          next: &#x27;/quick or the workflow that fits the first slice&#x27;,
+          prompt: &#x27;/init Configure Matchday from the approved charter. Recommend the smallest stack for a responsive web app with live-score updates, create real setup/lint/test commands and CI, and do not initialise Git or add hosting unless requested.&#x27;
         },
         &#x27;adopt-geminicon&#x27;: {
-          title: &#x27;$adopt-geminicon&#x27;,
+          title: &#x27;/adopt-geminicon&#x27;,
           when: &#x27;An established repository needs Geminicon guidance, hooks, verification, diagnostics, or a safe local-source update without replacing project-owned content.&#x27;,
           produces: &#x27;A read-only compatibility plan first, then only explicitly authorised absent-file adoption or baseline-safe updates with conflicts preserved.&#x27;,
           next: &#x27;Resolve conflicts deliberately, then run doctor and the target repository verification&#x27;,
-          prompt: &#x27;$adopt-geminicon Inspect the existing Matchday repository from this trusted Geminicon source. Report project-owned requirements and conflicts first. Do not apply, commit, push, or replace existing content.&#x27;
+          prompt: &#x27;/adopt-geminicon Inspect the existing Matchday repository from this trusted Geminicon source. Report project-owned requirements and conflicts first. Do not apply, commit, push, or replace existing content.&#x27;
         },
         brainstorm: {
-          title: &#x27;$brainstorm&#x27;,
+          title: &#x27;/brainstorm&#x27;,
           when: &#x27;Feature behaviour or approach is genuinely unclear and different choices would change the product.&#x27;,
           produces: &#x27;Resolved alternatives and an approved behavioural specification; no premature implementation.&#x27;,
-          next: &#x27;$spec or $write-plan when implementation is non-trivial&#x27;,
-          prompt: &#x27;$brainstorm Decide how Matchday fans subscribe to goal, halftime, and final-score alerts. Resolve team versus match subscriptions, quiet hours, duplicate alerts, permissions, and cancellation before implementation.&#x27;
+          next: &#x27;/spec or /write-plan when implementation is non-trivial&#x27;,
+          prompt: &#x27;/brainstorm Decide how Matchday fans subscribe to goal, halftime, and final-score alerts. Resolve team versus match subscriptions, quiet hours, duplicate alerts, permissions, and cancellation before implementation.&#x27;
         },
         spec: {
-          title: &#x27;$spec&#x27;,
+          title: &#x27;/spec&#x27;,
           when: &#x27;The request is precise but needs a durable executable contract before code changes.&#x27;,
           produces: &#x27;Scope, behaviour, states, edge cases, acceptance criteria, and verification requirements.&#x27;,
-          next: &#x27;$quick or $write-plan&#x27;,
-          prompt: &#x27;$spec Specify Matchday offline score handling. Define freshness indicators, cached data, reconnect behaviour, incident ordering, accessibility announcements, analytics boundaries, and acceptance tests.&#x27;
+          next: &#x27;/quick or /write-plan&#x27;,
+          prompt: &#x27;/spec Specify Matchday offline score handling. Define freshness indicators, cached data, reconnect behaviour, incident ordering, accessibility announcements, analytics boundaries, and acceptance tests.&#x27;
         },
         &#x27;write-plan&#x27;: {
-          title: &#x27;$write-plan&#x27;,
+          title: &#x27;/write-plan&#x27;,
           when: &#x27;An approved spec spans dependent tasks, files, or verification stages that benefit from sequencing.&#x27;,
           produces: &#x27;Dependency-aware tasks with file scopes, acceptance mapping, and verification for each step.&#x27;,
-          next: &#x27;$execute-plan&#x27;,
-          prompt: &#x27;$write-plan Turn the approved Matchday live-match specification into tasks for API streaming, state management, match UI, accessibility, tests, and browser verification. Map every acceptance criterion to a task and check.&#x27;
+          next: &#x27;/execute-plan&#x27;,
+          prompt: &#x27;/write-plan Turn the approved Matchday live-match specification into tasks for API streaming, state management, match UI, accessibility, tests, and browser verification. Map every acceptance criterion to a task and check.&#x27;
         },
         quick: {
-          title: &#x27;$quick&#x27;,
+          title: &#x27;/quick&#x27;,
           when: &#x27;A clear change is tightly scoped and requires no design, dependency, schema, or architecture decision.&#x27;,
           produces: &#x27;The smallest complete implementation with focused checks and canonical repository verification.&#x27;,
-          next: &#x27;$review when risk warrants it&#x27;,
-          prompt: &#x27;$quick Add the Matchday fixture timezone label using the existing date utility. Done when kickoff shows the viewer timezone, handles missing timezone data, has focused tests, and full lint/tests pass.&#x27;
+          next: &#x27;/review when risk warrants it&#x27;,
+          prompt: &#x27;/quick Add the Matchday fixture timezone label using the existing date utility. Done when kickoff shows the viewer timezone, handles missing timezone data, has focused tests, and full lint/tests pass.&#x27;
         },
         &#x27;execute-plan&#x27;: {
-          title: &#x27;$execute-plan&#x27;,
+          title: &#x27;/execute-plan&#x27;,
           when: &#x27;An approved plan contains independent implementation work that can be delegated without losing integration control.&#x27;,
           produces: &#x27;Integrated implementation of the approved tasks with bounded delegation and final verification.&#x27;,
-          next: &#x27;$review&#x27;,
-          prompt: &#x27;$execute-plan Implement the approved Matchday standings and team-page plan. Delegate only independent tasks, preserve unrelated work, integrate centrally, and run every acceptance check in the plan.&#x27;
+          next: &#x27;/review&#x27;,
+          prompt: &#x27;/execute-plan Implement the approved Matchday standings and team-page plan. Delegate only independent tasks, preserve unrelated work, integrate centrally, and run every acceptance check in the plan.&#x27;
         },
         &#x27;design-experience&#x27;: {
-          title: &#x27;$design-experience&#x27;,
+          title: &#x27;/design-experience&#x27;,
           when: &#x27;An app or website needs intentional UI/UX, responsive states, accessibility, a visual system, redesign, or frontend polish.&#x27;,
           produces: &#x27;A shaped, distinctive, production-grade experience verified in rendered and operational states.&#x27;,
-          next: &#x27;$review-creative&#x27;,
-          prompt: &#x27;$design-experience Design Matchday\&#x27;s live match centre for fans checking a phone in a noisy stadium. Preserve the current identity, shape score, clock, incidents, lineups, loading, stale, offline, and final states, then verify mobile and desktop output.&#x27;
+          next: &#x27;/review-creative&#x27;,
+          prompt: &#x27;/design-experience Design Matchday\&#x27;s live match centre for fans checking a phone in a noisy stadium. Preserve the current identity, shape score, clock, incidents, lineups, loading, stale, offline, and final states, then verify mobile and desktop output.&#x27;
         },
         &#x27;create-marketing&#x27;: {
-          title: &#x27;$create-marketing&#x27;,
+          title: &#x27;/create-marketing&#x27;,
           when: &#x27;Positioning, conversion copy, a campaign, launch, channel adaptation, or measurement needs evidence-backed execution.&#x27;,
           produces: &#x27;Channel-native assets plus an evidence ledger, assumptions, approvals, and measurement contract.&#x27;,
-          next: &#x27;$review-creative before publication&#x27;,
-          prompt: &#x27;$create-marketing Create Matchday launch copy for match alerts: one landing-page section and one email. Use only verified product behaviour, label unknown notification coverage, define measurement, and do not publish or send.&#x27;
+          next: &#x27;/review-creative before publication&#x27;,
+          prompt: &#x27;/create-marketing Create Matchday launch copy for match alerts: one landing-page section and one email. Use only verified product behaviour, label unknown notification coverage, define measurement, and do not publish or send.&#x27;
         },
         &#x27;review-creative&#x27;: {
-          title: &#x27;$review-creative&#x27;,
+          title: &#x27;/review-creative&#x27;,
           when: &#x27;Customer-facing design, marketing, documents, presentations, or visuals need an independent anti-slop quality gate.&#x27;,
           produces: &#x27;Prioritised evidence-based findings, verification gaps, and a READY or NEEDS WORK verdict; no edits.&#x27;,
           next: &#x27;Fix confirmed findings, rerender, then review again&#x27;,
-          prompt: &#x27;$review-creative Audit Matchday\&#x27;s rendered live match centre and launch page for comprehension, accessibility, stale-score trust, brand fit, unsupported claims, and generic sports-app patterns. Report findings only.&#x27;
+          prompt: &#x27;/review-creative Audit Matchday\&#x27;s rendered live match centre and launch page for comprehension, accessibility, stale-score trust, brand fit, unsupported claims, and generic sports-app patterns. Report findings only.&#x27;
         },
         investigate: {
-          title: &#x27;$investigate&#x27;,
+          title: &#x27;/investigate&#x27;,
           when: &#x27;A reproducible failure or unexplained behaviour has an unknown cause.&#x27;,
           produces: &#x27;A root-cause diagnosis with evidence and the smallest credible fix direction; diagnosis only unless a fix is requested.&#x27;,
-          next: &#x27;$quick or $spec after the cause is known&#x27;,
-          prompt: &#x27;$investigate Matchday displays the same goal twice after reconnecting to live updates. Reproduce it, trace event identity and reconnect state, identify the root cause, and do not implement a fix yet.&#x27;
+          next: &#x27;/quick or /spec after the cause is known&#x27;,
+          prompt: &#x27;/investigate Matchday displays the same goal twice after reconnecting to live updates. Reproduce it, trace event identity and reconnect state, identify the root cause, and do not implement a fix yet.&#x27;
         },
         &#x27;architecture-review&#x27;: {
-          title: &#x27;$architecture-review&#x27;,
+          title: &#x27;/architecture-review&#x27;,
           when: &#x27;A framework, database, integration, ownership boundary, or other expensive-to-reverse choice needs evaluation.&#x27;,
           produces: &#x27;A recommendation with trade-offs, reversibility, evidence, and an ADR only when authorised.&#x27;,
-          next: &#x27;$spec or an authorised ADR&#x27;,
-          prompt: &#x27;$architecture-review Evaluate Server-Sent Events versus WebSockets for Matchday live scores across mobile networks. Compare reliability, scale, hosting, recovery, testing, and operational cost. Do not record an ADR unless I approve the decision.&#x27;
+          next: &#x27;/spec or an authorised ADR&#x27;,
+          prompt: &#x27;/architecture-review Evaluate Server-Sent Events versus WebSockets for Matchday live scores across mobile networks. Compare reliability, scale, hosting, recovery, testing, and operational cost. Do not record an ADR unless I approve the decision.&#x27;
         },
         retro: {
-          title: &#x27;$retro&#x27;,
+          title: &#x27;/retro&#x27;,
           when: &#x27;A milestone, repeated blockage, scope drift, or invalid plan requires reassessing direction rather than debugging one defect.&#x27;,
           produces: &#x27;A continue, stop, or pivot recommendation with evidence and concrete next action.&#x27;,
           next: &#x27;Continue, re-specify, or stop based on the decision&#x27;,
-          prompt: &#x27;$retro Matchday has completed two milestones but live-data integration keeps expanding scope and delaying fan-visible value. Assess whether to continue, narrow to scheduled scores, or pivot the delivery sequence.&#x27;
+          prompt: &#x27;/retro Matchday has completed two milestones but live-data integration keeps expanding scope and delaying fan-visible value. Assess whether to continue, narrow to scheduled scores, or pivot the delivery sequence.&#x27;
         },
         review: {
-          title: &#x27;$review&#x27;,
+          title: &#x27;/review&#x27;,
           when: &#x27;A diff needs a read-only correctness, security, regression, scope, and test review against its request or spec.&#x27;,
           produces: &#x27;Prioritised actionable findings and verification gaps; no modifications.&#x27;,
-          next: &#x27;Fix findings, verify, then $ship if authorised&#x27;,
-          prompt: &#x27;$review Review the Matchday match-reminder diff against its approved spec. Focus on duplicate scheduling, timezone changes, opt-out behaviour, privacy, regressions, and missing tests. Do not edit.&#x27;
+          next: &#x27;Fix findings, verify, then /ship if authorised&#x27;,
+          prompt: &#x27;/review Review the Matchday match-reminder diff against its approved spec. Focus on duplicate scheduling, timezone changes, opt-out behaviour, privacy, regressions, and missing tests. Do not edit.&#x27;
         },
         &#x27;production-readiness&#x27;: {
-          title: &#x27;$production-readiness&#x27;,
+          title: &#x27;/production-readiness&#x27;,
           when: &#x27;A first launch or major production change needs evidence across security, data, recovery, observability, capacity, abuse resistance, and rollback.&#x27;,
           produces: &#x27;Prioritised gaps plus a READY, READY WITH ACCEPTED RISK, or NOT READY verdict; no deployment or risk acceptance.&#x27;,
-          next: &#x27;Close blockers, rerun the gate, then $ship under explicit Git authority&#x27;,
-          prompt: &#x27;$production-readiness Audit Matchday before launch. Verify account and club-admin authorization, live-score provider failure, notification abuse and rate limits, privacy and retention, dependency risk, observability, capacity, backups and restore evidence, migration order, rollback, incident ownership, and canonical security/lint/tests. Do not deploy or accept risk for me.&#x27;
+          next: &#x27;Close blockers, rerun the gate, then /ship under explicit Git authority&#x27;,
+          prompt: &#x27;/production-readiness Audit Matchday before launch. Verify account and club-admin authorization, live-score provider failure, notification abuse and rate limits, privacy and retention, dependency risk, observability, capacity, backups and restore evidence, migration order, rollback, incident ownership, and canonical security/lint/tests. Do not deploy or accept risk for me.&#x27;
         },
         ship: {
-          title: &#x27;$ship&#x27;,
+          title: &#x27;/ship&#x27;,
           when: &#x27;The user explicitly requests a commit, push, or draft pull request after the work is ready.&#x27;,
           produces: &#x27;Security/lint/test verified changes and only the authorised Git action; never an inferred deployment.&#x27;,
           next: &#x27;Deployment only under separate explicit authority&#x27;,
-          prompt: &#x27;$ship Verify the Matchday fixture and live-score work, create a local commit with an appropriate message, and stop. Do not push, open a pull request, deploy, or message anyone.&#x27;
+          prompt: &#x27;/ship Verify the Matchday fixture and live-score work, create a local commit with an appropriate message, and stop. Do not push, open a pull request, deploy, or message anyone.&#x27;
         },
         &#x27;conventional-commit&#x27;: {
-          title: &#x27;$conventional-commit&#x27;,
+          title: &#x27;/conventional-commit&#x27;,
           when: &#x27;A Conventional Commit message is requested without authorising any Git operation.&#x27;,
           produces: &#x27;A correctly scoped commit subject and optional body; no commit is created.&#x27;,
-          next: &#x27;$ship only if a Git action is explicitly requested&#x27;,
-          prompt: &#x27;$conventional-commit Draft a commit message for replacing Matchday score polling with reconnect-safe event streaming and adding duplicate-event tests. Do not run Git.&#x27;
+          next: &#x27;/ship only if a Git action is explicitly requested&#x27;,
+          prompt: &#x27;/conventional-commit Draft a commit message for replacing Matchday score polling with reconnect-safe event streaming and adding duplicate-event tests. Do not run Git.&#x27;
         },
         concise: {
-          title: &#x27;$concise&#x27;,
+          title: &#x27;/concise&#x27;,
           when: &#x27;The user wants shorter progress updates and answers without reducing implementation, reasoning, safety, or verification quality.&#x27;,
           produces: &#x27;Dense communication with exact technical evidence preserved.&#x27;,
           next: &#x27;Use alongside the task-specific skill&#x27;,
-          prompt: &#x27;$concise Keep updates terse while adding the Matchday competition filter. Preserve exact code, errors, decisions, and test results; do not reduce engineering checks.&#x27;
+          prompt: &#x27;/concise Keep updates terse while adding the Matchday competition filter. Preserve exact code, errors, decisions, and test results; do not reduce engineering checks.&#x27;
         },
         &#x27;context-dump&#x27;: {
-          title: &#x27;$context-dump&#x27;,
+          title: &#x27;/context-dump&#x27;,
           when: &#x27;A human-readable handoff is requested or a complex session must continue cleanly elsewhere; not for routine completion.&#x27;,
           produces: &#x27;An explicit atomic Markdown checkpoint with repository identity, related paths, objective, decisions, verification, open risks, and next action.&#x27;,
           next: &#x27;Run python scripts/geminicon.py resume in a fresh task and verify the checkpoint against the current diff&#x27;,
-          prompt: &#x27;$context-dump Save an explicit checkpoint for Matchday\&#x27;s live match centre with the current objective, approved behaviour, related project paths, architecture decisions, test status, unresolved reconnect issue, and exact next step.&#x27;
+          prompt: &#x27;/context-dump Save an explicit checkpoint for Matchday\&#x27;s live match centre with the current objective, approved behaviour, related project paths, architecture decisions, test status, unresolved reconnect issue, and exact next step.&#x27;
         }
       };
 

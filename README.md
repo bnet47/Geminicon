@@ -13,13 +13,13 @@
 
 # Geminicon
 
-<p align="center">
+<p>
   <strong>A production-minded Gemini Antigravity agent harness for new and established repositories.</strong>
   <br>
   Turn agent-driven development into an inspectable path from project context to verified, explicitly authorized delivery.
 </p>
 
-<p align="center">
+<p>
   <a href="https://github.com/new?template_name=geminicon&template_owner=bnet47"><strong>Use this template</strong></a>
   ·
   <a href="#adopt-into-an-existing-repository"><strong>Adopt into an existing repo</strong></a>
